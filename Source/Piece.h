@@ -30,7 +30,10 @@ public:
   const QPixmap& getPixmap() const;
 
   void assignCell(Cell* cell);
-  Cell* assignedCell() { return _myCell; }
+  Cell* assignedCell()
+  {
+    return _myCell;
+  }
   void clearAssignedCell();
 
 signals:

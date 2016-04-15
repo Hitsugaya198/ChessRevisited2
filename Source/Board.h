@@ -124,22 +124,21 @@ public:
   void highLightCoordinates(boardCoordinatesType& set);
   void toggleCell(Cell* cell);
 
-  public slots:
+public slots:
   void clearHighLights();
 
-  signals:
+signals:
   void moveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
   void aiMoveCompletionRequired();
 
-  private slots:
+private slots:
 
   void moveInitiated(boardCoordinateType fromWhere);
   void continueInitiatedMove(boardCoordinateType whereTo);
   void handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
-
+  void timerEvent(QTimerEvent* event);
 private:
   Ui::Board* ui;
-
   static boardStateMapType _workingBoardStateMap;
   static boardStateMapType _backedUpBoardStateMap;
   static boardStateMapType _stagingBoardStateMap;

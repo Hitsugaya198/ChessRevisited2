@@ -69,26 +69,31 @@ void Piece::setColor(const ePieceColors& color)
   _color = color;
 }
 
+///
+/// \brief Piece::enemyColor
+/// \return
+///
 Piece::ePieceColors Piece::enemyColor() const
 {
-  if(color() == Pieces::PieceColors::eWhite)
-  {
+  if (color() == Pieces::PieceColors::eWhite) {
     return Pieces::PieceColors::eBlack;
   }
-  else
-  {
+  else {
     return Pieces::PieceColors::eWhite;
   }
 }
 
+///
+/// \brief Piece::enemyColor
+/// \param colorInput
+/// \return
+///
 Piece::ePieceColors Piece::enemyColor(Pieces::PieceColors::ePieceColors colorInput)
 {
-  if(colorInput == Pieces::PieceColors::eWhite)
-  {
+  if (colorInput == Pieces::PieceColors::eWhite) {
     return Pieces::PieceColors::eBlack;
   }
-  else
-  {
+  else {
     return Pieces::PieceColors::eWhite;
   }
 }
@@ -98,12 +103,10 @@ Piece::ePieceColors Piece::enemyColor(Pieces::PieceColors::ePieceColors colorInp
 ///
 void Piece::generatePixmap()
 {
-  if(this->color() == Pieces::PieceColors::eNone)
-  {
+  if (this->color() == Pieces::PieceColors::eNone) {
     return;
   }
-  if(this->identity() == Pieces::Identities::eNone)
-  {
+  if (this->identity() == Pieces::Identities::eNone) {
     return;
   }
 
@@ -113,8 +116,6 @@ void Piece::generatePixmap()
 
   QPixmap pm;
   pm.load(resPath, "PNG");
-
-//   qDebug() << resPath;
 
   _pixmap = QPixmap(pm).scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }

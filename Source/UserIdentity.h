@@ -17,9 +17,9 @@ public:
     eMax = eComputer
   };
 
+  virtual ~UserIdentity() {}
 
 
-virtual ~UserIdentity() {}
 
   static UserIdentity& getInstance()
   {

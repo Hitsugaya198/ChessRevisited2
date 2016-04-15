@@ -1,16 +1,27 @@
 #include "MoveGenerator.h"
 #include "TurnManager.h"
 
+///
+/// \brief MoveGenerator::MoveGenerator
+/// \param parent
+///
 MoveGenerator::MoveGenerator(QObject* parent) : QObject(parent)
 {
 
 }
 
+///
+/// \brief MoveGenerator::~MoveGenerator
+///
 MoveGenerator::~MoveGenerator()
 {
 
 }
 
+///
+/// \brief MoveGenerator::handleTurnChange
+/// \param itIsNowThisPlayersTurn
+///
 void MoveGenerator::handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersTurn)
 {
   if (itIsNowThisPlayersTurn->identity() == _aiPlayer->identity()) {
@@ -201,33 +212,49 @@ void MoveGenerator::handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersT
   }
 }
 
+///
+/// \brief MoveGenerator::handleMoveCompletionRequired
+///
 void MoveGenerator::handleMoveCompletionRequired()
 {
-  if(!_containerForMoving.isEmpty())
-  {
+  if (!_containerForMoving.isEmpty()) {
     _locationEnd = *(_containerForMoving.begin());
     _theGameBoard->toggleCell(_theGameBoard->getCell(_locationEnd));
   }
 }
 
+///
+/// \brief MoveGenerator::associatedGameBoard
+/// \return
+///
 Board* MoveGenerator::associatedGameBoard() const
 {
   return _theGameBoard;
 }
 
+///
+/// \brief MoveGenerator::associateGameBoard
+/// \param theGameBoard
+///
 void MoveGenerator::associateGameBoard(Board* theGameBoard)
 {
   _theGameBoard = theGameBoard;
 }
 
+///
+/// \brief MoveGenerator::aiPlayer
+/// \return
+///
 QSharedPointer<Player> MoveGenerator::aiPlayer() const
 {
   return _aiPlayer;
 }
 
+///
+/// \brief MoveGenerator::setAiPlayer
+/// \param aiPlayer
+///
 void MoveGenerator::setAiPlayer(const QSharedPointer<Player>& aiPlayer)
 {
   _aiPlayer = aiPlayer;
 }
-
-
