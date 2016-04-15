@@ -278,8 +278,14 @@ void Board::continueInitiatedMove(boardCoordinateType whereTo)
 void Board::handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated)
 {
   if (playerWhoInitiated->identity() == player2()->identity()) {
-    emit aiMoveCompletionRequired();
+    startTimer(800);
   }
+}
+
+void Board::timerEvent(QTimerEvent* event)
+{
+  killTimer(event->timerId());
+  emit aiMoveCompletionRequired();
 }
 
 ///
