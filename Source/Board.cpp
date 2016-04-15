@@ -17,6 +17,10 @@ piecesSetType Board::_workingCapturedPieces  = piecesSetType();
 piecesSetType Board::_backedUpCapturedPieces = piecesSetType();
 piecesSetType Board::_stagingCapturedPieces  = piecesSetType();
 
+///
+/// \brief Board::Board
+/// \param parent
+///
 Board::Board(QWidget* parent):
   QWidget(parent),
   ui(new Ui::Board)
@@ -25,11 +29,21 @@ Board::Board(QWidget* parent):
   resetBoard(true, true);
 }
 
+///
+/// \brief Board::~Board
+///
 Board::~Board()
 {
 
 }
 
+///
+/// \brief Board::updatePieceMap
+/// \param from
+/// \param to
+/// \param boardStateMap
+/// \param capturedPiecesContainer
+///
 void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesSetType& capturedPiecesContainer)
 {
   boardCoordinateType fromCoords = boardCoordinateType(from->row(), from->column());
@@ -52,6 +66,9 @@ void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMa
   boardStateMap.insert(toCoords, fromType); // puts it in its new location
 }
 
+///
+/// \brief Board::clearHighLights
+///
 void Board::clearHighLights()
 {
   for (int row = 1; row <= 8; ++row)
@@ -67,6 +84,10 @@ void Board::clearHighLights()
     }
 }
 
+///
+/// \brief Board::moveInitiated
+/// \param fromWhere
+///
 void Board::moveInitiated(boardCoordinateType fromWhere)
 {
   // validate that there is actually a piece there on the board.
@@ -221,6 +242,10 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
   emit moveInitiatedComplete(TurnManager::getInstance().currentPlayer());
 }
 
+///
+/// \brief Board::continueInitiatedMove
+/// \param whereTo
+///
 void Board::continueInitiatedMove(boardCoordinateType whereTo)
 {
   _locationEnd = whereTo;
@@ -232,12 +257,10 @@ void Board::continueInitiatedMove(boardCoordinateType whereTo)
     movePieceStart(this, whereFrom, whereTo);
     movePieceCompleteMove(this);
 
-    if(TurnManager::getInstance().currentPlayer()->identity() == UserIdentity::eHuman)
-    {
+    if (TurnManager::getInstance().currentPlayer()->identity() == UserIdentity::eHuman) {
       TurnManager::switchPlayers(_player2);
     }
-    else
-    {
+    else {
       TurnManager::switchPlayers(_player1);
     }
 
@@ -248,75 +271,131 @@ void Board::continueInitiatedMove(boardCoordinateType whereTo)
   }
 }
 
+///
+/// \brief Board::handleMoveInitiatedComplete
+/// \param playerWhoInitiated
+///
 void Board::handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated)
 {
-  if(playerWhoInitiated->identity() == player2()->identity())
-  {
+  if (playerWhoInitiated->identity() == player2()->identity()) {
     emit aiMoveCompletionRequired();
   }
 }
+
+///
+/// \brief Board::pieceWhoWillBeAttacked
+/// \return
+///
 definedPieceType Board::pieceWhoWillBeAttacked() const
 {
   return _pieceWhoWillBeAttacked;
 }
 
+///
+/// \brief Board::setPieceWhoWillBeAttacked
+/// \param pieceWhoWillBeAttacked
+///
 void Board::setPieceWhoWillBeAttacked(const definedPieceType& pieceWhoWillBeAttacked)
 {
   _pieceWhoWillBeAttacked = pieceWhoWillBeAttacked;
 }
 
+///
+/// \brief Board::pieceWhoWillBeAttacking
+/// \return
+///
 definedPieceType Board::pieceWhoWillBeAttacking() const
 {
   return _pieceWhoWillBeAttacking;
 }
 
+///
+/// \brief Board::setPieceWhoWillBeAttacking
+/// \param pieceWhoWillBeAttacking
+///
 void Board::setPieceWhoWillBeAttacking(const definedPieceType& pieceWhoWillBeAttacking)
 {
   _pieceWhoWillBeAttacking = pieceWhoWillBeAttacking;
 }
 
+///
+/// \brief Board::locationOfVictim
+/// \return
+///
 boardCoordinateType Board::locationOfVictim() const
 {
   return _locationOfVictim;
 }
 
+///
+/// \brief Board::setLocationOfVictim
+/// \param locationOfVictim
+///
 void Board::setLocationOfVictim(const boardCoordinateType& locationOfVictim)
 {
   _locationOfVictim = locationOfVictim;
 }
 
+///
+/// \brief Board::locationOfAttacker
+/// \return
+///
 boardCoordinateType Board::locationOfAttacker() const
 {
   return _locationOfAttacker;
 }
 
+///
+/// \brief Board::setLocationOfAttacker
+/// \param locationOfAttacker
+///
 void Board::setLocationOfAttacker(const boardCoordinateType& locationOfAttacker)
 {
   _locationOfAttacker = locationOfAttacker;
 }
 
-
+///
+/// \brief Board::player2
+/// \return
+///
 QSharedPointer<Player>& Board::player2()
 {
   return _player2;
 }
 
+///
+/// \brief Board::setPlayer2
+/// \param player2
+///
 void Board::setPlayer2(const QSharedPointer<Player>& player2)
 {
   _player2 = player2;
 }
 
+///
+/// \brief Board::player1
+/// \return
+///
 QSharedPointer<Player>& Board::player1()
 {
   return _player1;
 }
 
+///
+/// \brief Board::setPlayer1
+/// \param player1
+///
 void Board::setPlayer1(const QSharedPointer<Player>& player1)
 {
   _player1 = player1;
 }
 
-
+///
+/// \brief Board::findPiece
+/// \param colorThatIsToBeFound
+/// \param identityThatIsToBeFound
+/// \return
+///
 boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound,
                                      Pieces::Identities::eIdentities identityThatIsToBeFound)
 {
@@ -324,6 +403,11 @@ boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThat
   return findPiece(pieceType);
 }
 
+///
+/// \brief Board::findPiece
+/// \param piece
+/// \return
+///
 boardCoordinateType Board::findPiece(definedPieceType piece)
 {
   boardCoordinateType pieceLocation = boardCoordinateType(0, 0);
@@ -364,6 +448,12 @@ boardCoordinateType Board::findPiece(definedPieceType piece)
   return pieceLocation;
 }
 
+///
+/// \brief Board::findPieces
+/// \param piece
+/// \param boardStateToSearch
+/// \return
+///
 boardCoordinatesType Board::findPieces(definedPieceType piece, boardStateMapType& boardStateToSearch)
 {
   boardCoordinatesType retVal;
@@ -407,6 +497,10 @@ boardCoordinatesType Board::findPieces(definedPieceType piece, boardStateMapType
   return retVal;
 }
 
+///
+/// \brief Board::highLightCoordinates
+/// \param set
+///
 void Board::highLightCoordinates(boardCoordinatesType& set)
 {
   boardCoordinatesType::iterator i = set.begin();
@@ -421,11 +515,22 @@ void Board::highLightCoordinates(boardCoordinatesType& set)
   }
 }
 
+///
+/// \brief Board::toggleCell
+/// \param cell
+///
 void Board::toggleCell(Cell* cell)
 {
   cell->toggle();
 }
 
+///
+/// \brief Board::getPath
+/// \param pointA
+/// \param pointB
+/// \param boardStateToSearch
+/// \return
+///
 boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateType pointB, boardStateMapType& boardStateToSearch)
 {
   boardCoordinatesType returnSet;
@@ -537,6 +642,11 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
   return returnSet;
 }
 
+///
+/// \brief Board::evaluateBoardState
+/// \param boardStateToEvaluate
+/// \return
+///
 bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 {
   boardCoordinatesType container;
@@ -557,6 +667,14 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
   return true;
 }
 
+///
+/// \brief Board::isTheTargetWithinRange
+/// \param colorThatIsToBeAttacked
+/// \param identityThatIsToBeAttacked
+/// \param container
+/// \param boardStateToUse
+/// \return
+///
 bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
                                    Pieces::Identities::eIdentities identityThatIsToBeAttacked,
                                    boardCoordinatesType& container,
@@ -622,6 +740,14 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
   return false;
 }
 
+///
+/// \brief Board::movePieceStart
+/// \param _this
+/// \param fromCell
+/// \param toCell
+/// \param scenario
+/// \param scenarioPieces
+///
 void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStateMapType& scenario, piecesSetType& scenarioPieces)
 {
   // back up previous state
@@ -641,13 +767,26 @@ void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStat
   scenarioPieces = piecesSetType(_stagingCapturedPieces);
 }
 
+///
+/// \brief Board::movePieceCompleteMove
+/// \param _this
+/// \param scenario
+///
 void Board::movePieceCompleteMove(Board* _this, boardStateMapType& scenario)
 {
   _this->redrawBoardFromMap(scenario);
   _this->clearHighLights();
   _this->uncheckAllCheckedCells();
+
+  // Update the ui containers for captured pieces
+
 }
 
+///
+/// \brief Board::movePieceRevertMove
+/// \param scenario
+/// \param scenarioPieces
+///
 void Board::movePieceRevertMove(boardStateMapType& scenario, piecesSetType& scenarioPieces)
 {
   // recover from backup
@@ -655,6 +794,13 @@ void Board::movePieceRevertMove(boardStateMapType& scenario, piecesSetType& scen
   scenarioPieces = piecesSetType(_backedUpCapturedPieces);
 }
 
+///
+/// \brief Board::mapMoves
+/// \param rules
+/// \param piece
+/// \param container
+/// \param location
+///
 void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location)
 {
   bool lessLinearMoveRequired = false;
@@ -881,6 +1027,13 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
   }
 }
 
+///
+/// \brief Board::isMoveLegal
+/// \param moveFrom
+/// \param moveTo
+/// \param containerToUse
+/// \return
+///
 bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse)
 {
   Pieces::PieceColors::ePieceColors fromColor = _workingBoardStateMap.value(moveFrom).second;
@@ -1020,72 +1173,126 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
   }
 }
 
+///
+/// \brief Board::stagingBoardStateMap
+/// \return
+///
 boardStateMapType& Board::stagingBoardStateMap()
 {
   return _stagingBoardStateMap;
 }
 
+///
+/// \brief Board::setStagingBoardStateMap
+/// \param stagingBoardStateMap
+///
 void Board::setStagingBoardStateMap(const boardStateMapType& stagingBoardStateMap)
 {
   _stagingBoardStateMap = stagingBoardStateMap;
 }
 
+///
+/// \brief Board::backedUpBoardStateMap
+/// \return
+///
 boardStateMapType& Board::backedUpBoardStateMap()
 {
   return _backedUpBoardStateMap;
 }
 
+///
+/// \brief Board::setBackedUpBoardStateMap
+/// \param backedUpBoardStateMap
+///
 void Board::setBackedUpBoardStateMap(const boardStateMapType& backedUpBoardStateMap)
 {
   _backedUpBoardStateMap = backedUpBoardStateMap;
 }
 
+///
+/// \brief Board::workingBoardStateMap
+/// \return
+///
 boardStateMapType& Board::workingBoardStateMap()
 {
   return _workingBoardStateMap;
 }
 
+///
+/// \brief Board::setWorkingBoardStateMap
+/// \param workingBoardStateMap
+///
 void Board::setWorkingBoardStateMap(const boardStateMapType& workingBoardStateMap)
 {
   _workingBoardStateMap = workingBoardStateMap;
 }
 
+///
+/// \brief Board::stagingCapturedPieces
+/// \return
+///
 piecesSetType& Board::stagingCapturedPieces()
 {
   return _stagingCapturedPieces;
 }
 
+///
+/// \brief Board::setStagingCapturedPieces
+/// \param stagingCapturedPieces
+///
 void Board::setStagingCapturedPieces(const piecesSetType& stagingCapturedPieces)
 {
   _stagingCapturedPieces = stagingCapturedPieces;
 }
 
+///
+/// \brief Board::backedUpCapturedPieces
+/// \return
+///
 piecesSetType& Board::backedUpCapturedPieces()
 {
   return _backedUpCapturedPieces;
 }
 
+///
+/// \brief Board::setBackedUpCapturedPieces
+/// \param backedUpCapturedPieces
+///
 void Board::setBackedUpCapturedPieces(const piecesSetType& backedUpCapturedPieces)
 {
   _backedUpCapturedPieces = backedUpCapturedPieces;
 }
 
+///
+/// \brief Board::workingCapturedPieces
+/// \return
+///
 piecesSetType& Board::workingCapturedPieces()
 {
   return _workingCapturedPieces;
 }
 
+///
+/// \brief Board::setWorkingCapturedPieces
+/// \param workingCapturedPieces
+///
 void Board::setWorkingCapturedPieces(const piecesSetType& workingCapturedPieces)
 {
   _workingCapturedPieces = workingCapturedPieces;
 }
 
-
+///
+/// \brief Board::resetBoard
+/// \param styleOnly
+///
 void Board::resetBoard(bool styleOnly)
 {
   resetBoard(false, styleOnly);
 }
 
+///
+/// \brief Board::uncheckAllCheckedCells
+///
 void Board::uncheckAllCheckedCells()
 {
   for (int row = 1; row <= 8; ++row)
@@ -1104,6 +1311,10 @@ void Board::uncheckAllCheckedCells()
   Cell::resetCheckedCounter();
 }
 
+///
+/// \brief Board::redrawBoardFromMap
+/// \param currentBoardStateMap
+///
 void Board::redrawBoardFromMap(boardStateMapType currentBoardStateMap)
 {
   // First, clear the board
@@ -1130,14 +1341,19 @@ void Board::redrawBoardFromMap(boardStateMapType currentBoardStateMap)
   }
 }
 
+///
+/// \brief Board::resetBoard
+/// \param forTheFirstTime
+/// \param styleOnly
+///
 void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
 {
-  //! Create a startup map for new games
+  // Create a startup map for new games
   createStartupMap(_backedUpBoardStateMap);
   createStartupMap(_workingBoardStateMap);
   createStartupMap(_stagingBoardStateMap);
 
-  //! Initialize the board.
+  // Initialize the board.
   for (int row = 1; row <= 8; ++row)
     for (int column = 1; column <= 8; ++column) {
 
@@ -1165,6 +1381,12 @@ void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
   setEnabled(true);
 }
 
+///
+/// \brief Board::getCell
+/// \param row
+/// \param column
+/// \return
+///
 Cell* Board::getCell(int row, int column) const
 {
   QGridLayout* parentLayout = ui->gridLayout;
@@ -1180,11 +1402,20 @@ Cell* Board::getCell(int row, int column) const
   return theRealCell;
 }
 
+///
+/// \brief Board::getCell
+/// \param position
+/// \return
+///
 Cell* Board::getCell(boardCoordinateType position) const
 {
   return getCell(position.first, position.second);
 }
 
+///
+/// \brief Board::initializeBoardCell
+/// \param cell
+///
 void Board::initializeBoardCell(Cell* cell)
 {
   boardCoordinateType coordinate(cell->position());
@@ -1196,16 +1427,20 @@ void Board::initializeBoardCell(Cell* cell)
   cell->assignPiece(pieceInstance);
 }
 
+///
+/// \brief Board::createStartupMap
+/// \param mapToInitialize
+///
 void Board::createStartupMap(boardStateMapType& mapToInitialize)
 {
   if (mapToInitialize.isEmpty()) {
     for (rowType row = eMinRow; row <= eMaxRow; ++row)
       for (columnType column = eMinColumn; column <= eMaxColumn; ++column) {
-        if (row > ePawnsTopRow && row < ePawnsBottomRow) { //! No pieces on the board between rows 2 and 7
+        if (row > ePawnsTopRow && row < ePawnsBottomRow) { // No pieces on the board between rows 2 and 7
           continue;
         }
 
-        if (row == ePawnsTopRow || row == ePawnsBottomRow) { //! This will be all pawns.  Assume player always plays with white
+        if (row == ePawnsTopRow || row == ePawnsBottomRow) { // This will be all pawns.  Assume player always plays with white
           Pieces::PieceColors::ePieceColors pieceColor;
           if (row == ePawnsTopRow) {
             pieceColor = Pieces::PieceColors::eBlack;
@@ -1216,7 +1451,7 @@ void Board::createStartupMap(boardStateMapType& mapToInitialize)
           mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::ePawn, pieceColor));
         }
 
-        if (row == eOtherTopRow || row == eOtherBottomRow) { //! This is where all the more important enemy pieces start
+        if (row == eOtherTopRow || row == eOtherBottomRow) { // This is where all the more important enemy pieces start
           Pieces::PieceColors::ePieceColors pieceColor;
           if (row == eOtherTopRow) {
             pieceColor = Pieces::PieceColors::eBlack;

@@ -24,7 +24,9 @@ SOURCES += \
     ../../Source/MoveRules.cpp \
     ../../Source/Player.cpp \
     ../../Source/TurnManager.cpp \
-    ../../Source/MoveGenerator.cpp
+    ../../Source/MoveGenerator.cpp \
+    ../../Source/PixmapWidget.cpp \
+    ../../Source/CapturedPieceWidget.cpp
 
 HEADERS  += \
     ../../Source/Chess.h \
@@ -38,10 +40,13 @@ HEADERS  += \
     ../../Source/MoveRules.h \
     ../../Source/Player.h \
     ../../Source/TurnManager.h \
-    ../../Source/MoveGenerator.h
+    ../../Source/MoveGenerator.h \
+    ../../Source/PixmapWidget.h \
+    ../../Source/CapturedPieceWidget.h
 
 FORMS    += ../../Source/Chess.ui \
-            ../../Source/Board.ui
+            ../../Source/Board.ui \
+    ../../Source/CapturedPieceWidget.ui
 
 RESOURCES += \
     ../chess.qrc

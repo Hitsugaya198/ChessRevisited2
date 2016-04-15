@@ -6,33 +6,34 @@
 
 #include <QMainWindow>
 
-namespace Ui {
+namespace Ui
+{
   class Chess;
 }
 
 class Chess : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 
-  public:
-    explicit Chess(QWidget *parent = 0);
+public:
+  explicit Chess(QWidget* parent = 0);
   virtual ~Chess();
 
-  private slots:
-    void on_action_New_Game_triggered();
-    void on_actionE_xit_triggered();
+private slots:
+  void on_action_New_Game_triggered();
+  void on_actionE_xit_triggered();
 
-    void startNewGame();
-    void endGame(bool checkMate);
+  void startNewGame();
+  void endGame(bool checkMate);
 
 
 
-  private:
-    Ui::Chess *ui;
+private:
+  Ui::Chess* ui;
 
-    QSharedPointer<Player> _player1;
-    QSharedPointer<Player> _player2;
-    QScopedPointer<MoveGenerator> _artificialIntelligence;
+  QSharedPointer<Player> _player1;
+  QSharedPointer<Player> _player2;
+  QScopedPointer<MoveGenerator> _artificialIntelligence;
 
 };
 

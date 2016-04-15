@@ -48,11 +48,13 @@ public:
 
   static inline PieceColors::ePieceColors flipColor(PieceColors::ePieceColors color)
   {
-    switch(color)
-    {
-      case PieceColors::eBlack : return PieceColors::eWhite;
-      case PieceColors::eWhite : return PieceColors::eBlack;
-      default                  : return PieceColors::eNone;
+    switch (color) {
+    case PieceColors::eBlack :
+      return PieceColors::eWhite;
+    case PieceColors::eWhite :
+      return PieceColors::eBlack;
+    default                  :
+      return PieceColors::eNone;
     }
   }
 

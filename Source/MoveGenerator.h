@@ -8,31 +8,31 @@
 
 class MoveGenerator : public QObject
 {
-    Q_OBJECT
-  public:
-    explicit MoveGenerator(QObject *parent = 0);
-    virtual ~MoveGenerator();
+  Q_OBJECT
+public:
+  explicit MoveGenerator(QObject* parent = 0);
+  virtual ~MoveGenerator();
 
-    QSharedPointer<Player> aiPlayer() const;
-    void setAiPlayer(const QSharedPointer<Player>& aiPlayer);
+  QSharedPointer<Player> aiPlayer() const;
+  void setAiPlayer(const QSharedPointer<Player>& aiPlayer);
 
-    Board* associatedGameBoard() const;
-    void associateGameBoard(Board* associatedGameBoard);
+  Board* associatedGameBoard() const;
+  void associateGameBoard(Board* associatedGameBoard);
 
-  signals:
+signals:
 
-  public slots:
-    void handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersTurn);
-    void handleMoveCompletionRequired();
+public slots:
+  void handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersTurn);
+  void handleMoveCompletionRequired();
 
-  private:
-    QSharedPointer<Player> _aiPlayer;
-    Board* _theGameBoard;
-    boardCoordinateType _locationStart;
-    boardCoordinateType _locationEnd;
-    boardCoordinatesType _containerForMoving;
+private:
+  QSharedPointer<Player> _aiPlayer;
+  Board* _theGameBoard;
+  boardCoordinateType _locationStart;
+  boardCoordinateType _locationEnd;
+  boardCoordinatesType _containerForMoving;
 
-    void moveTheFirstPieceThatCanMove();
+  void moveTheFirstPieceThatCanMove();
 };
 
 #endif // MOVEGENERATOR_H

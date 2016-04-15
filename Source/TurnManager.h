@@ -20,12 +20,12 @@ public:
   static QSharedPointer<Player>& currentPlayer();
   static void switchPlayers(QSharedPointer<Player>& toWhichPlayer);
 
-  signals:
+signals:
   void turnChanged(QSharedPointer<Player>& toWhichPlayer);
 
-  public slots:
+public slots:
 
-  private:
+private:
   explicit TurnManager(QObject* parent = 0);
   TurnManager(TurnManager const&);
   void operator=(TurnManager const&);

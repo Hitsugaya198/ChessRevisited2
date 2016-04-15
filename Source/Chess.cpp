@@ -7,12 +7,16 @@
 
 #include <QMessageBox>
 
+///
+/// \brief Chess::Chess
+/// \param parent
+///
 Chess::Chess(QWidget* parent) :
   QMainWindow(parent),
   ui(new Ui::Chess),
   _player1(new Player(UserIdentity::eHuman)),
   _player2(new Player(UserIdentity::eComputer)),
-  _artificialIntelligence (new MoveGenerator())
+  _artificialIntelligence(new MoveGenerator())
 {
   ui->setupUi(this);
 
@@ -34,11 +38,17 @@ Chess::Chess(QWidget* parent) :
   on_action_New_Game_triggered();
 }
 
+///
+/// \brief Chess::~Chess
+///
 Chess::~Chess()
 {
   delete ui;
 }
 
+///
+/// \brief Chess::on_action_New_Game_triggered
+///
 void Chess::on_action_New_Game_triggered()
 {
   ui->_theGameBoard->resetBoard(false, false);
@@ -50,16 +60,26 @@ void Chess::on_action_New_Game_triggered()
   TurnManager::getInstance().switchPlayers(_player1);
 }
 
+///
+/// \brief Chess::on_actionE_xit_triggered
+///
 void Chess::on_actionE_xit_triggered()
 {
 
 }
 
+///
+/// \brief Chess::startNewGame
+///
 void Chess::startNewGame()
 {
 
 }
 
+///
+/// \brief Chess::endGame
+/// \param checkMate
+///
 void Chess::endGame(bool checkMate)
 {
   ui->_theGameBoard->setEnabled(false);

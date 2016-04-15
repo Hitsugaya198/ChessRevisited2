@@ -11,8 +11,8 @@
 int Cell::_checkedCounter = 0;
 
 ///
-/// \class Cell
-/// \brief Cell::Cell This is the default constructor.
+/// \brief Cell::Cell
+/// \param parent
 ///
 Cell::Cell(QWidget* parent):
   QPushButton(parent),
@@ -25,7 +25,7 @@ Cell::Cell(QWidget* parent):
 }
 
 ///
-/// \brief Cell::~Cell Destructor.
+/// \brief Cell::~Cell
 ///
 Cell::~Cell()
 {
@@ -33,7 +33,7 @@ Cell::~Cell()
 }
 
 ///
-/// \brief Cell::row Returns the row where Cell resides on the chess board.
+/// \brief Cell::row
 /// \return
 ///
 int Cell::row() const
@@ -42,7 +42,7 @@ int Cell::row() const
 }
 
 ///
-/// \brief Cell::setRow Sets the value for \a row where the Cell resides on the chess board.
+/// \brief Cell::setRow
 /// \param row
 ///
 void Cell::setRow(int row)
@@ -51,7 +51,7 @@ void Cell::setRow(int row)
 }
 
 ///
-/// \brief Cell::column Returns the column where Cell resides on the chess board.
+/// \brief Cell::column
 /// \return
 ///
 int Cell::column() const
@@ -60,7 +60,7 @@ int Cell::column() const
 }
 
 ///
-/// \brief Cell::setColumn Sets the value for \a column where Cell resides on the chess board.
+/// \brief Cell::setColumn
 /// \param column
 ///
 void Cell::setColumn(int column)
@@ -77,11 +77,18 @@ void Cell::highLightCell(bool highLight)
   setColor(highLight);
 }
 
+///
+/// \brief Cell::resetCheckedCounter
+///
 void Cell::resetCheckedCounter()
 {
   _checkedCounter = 0;
 }
 
+///
+/// \brief Cell::handleCellToggled
+/// \param checked
+///
 void Cell::handleCellToggled(bool checked)
 {
   // Starting a new move
@@ -101,8 +108,7 @@ void Cell::handleCellToggled(bool checked)
   else if (_checkedCounter == 1 && !checked) {
     --_checkedCounter;
   }
-  else if(_checkedCounter > 1 || _checkedCounter < 0)
-  {
+  else if (_checkedCounter > 1 || _checkedCounter < 0) {
     _checkedCounter = 0;
   }
   highLightCell(false);
@@ -116,7 +122,7 @@ void Cell::handleCellToggled(bool checked)
 ///
 void Cell::setCoordinate(int row, int column)
 {
-  QMutexLocker locker(&_setCoordinateMutex );
+  QMutexLocker locker(&_setCoordinateMutex);
   setRow(row);
   setColumn(column);
 
@@ -125,6 +131,7 @@ void Cell::setCoordinate(int row, int column)
 
 ///
 /// \brief Cell::setColor
+/// \param highLight
 ///
 void Cell::setColor(bool highLight)
 {
@@ -132,9 +139,9 @@ void Cell::setColor(bool highLight)
 
   style()->unpolish(this);
 
-  QString s = styleSheet();                       //! This line retrieves your current StyleSheet for THIS widget.
-  StyleSheetProcessor::splitStyleMapType map;     //! Creates a map to store your stylesheet elements
-  map = StyleSheetProcessor::splitStyleSheet(s);  //! Assigns your processed stylesheet to the local map
+  QString s = styleSheet();                       // This line retrieves your current StyleSheet for THIS widget.
+  StyleSheetProcessor::splitStyleMapType map;     // Creates a map to store your stylesheet elements
+  map = StyleSheetProcessor::splitStyleSheet(s);  // Assigns your processed stylesheet to the local map
 
   QString brownColor;
   QString beigeColor;
@@ -154,37 +161,37 @@ void Cell::setColor(bool highLight)
     beigeBorderColor = Colors::getInstance().getBeige();
   }
 
-  //! And then use that "id" to determine the color.
+  // And then use that "id" to determine the color.
   if (_row % 2 == 0) {
     if (_column % 2 == 0) {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    //! Replaces the stylesheet element for background color with "#663300"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeBorderColor);        //! Replaces the stylesheet element for background color with "#EDC25E"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    // Replaces the stylesheet element for background color with "#663300"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeBorderColor);        // Replaces the stylesheet element for background color with "#EDC25E"
     }
     else {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    //! Replaces the stylesheet element for background color with "#EDC25E"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownBorderColor);        //! Replaces the stylesheet element for border color with "#663300"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    // Replaces the stylesheet element for background color with "#EDC25E"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownBorderColor);        // Replaces the stylesheet element for border color with "#663300"
     }
   }
 
   if (_row % 2 != 0) {
     if (_column % 2 != 0) {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    //! Replaces the stylesheet element for background color with "#663300"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeBorderColor);        //! Replaces the stylesheet element for background color with "#EDC25E"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    // Replaces the stylesheet element for background color with "#663300"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeBorderColor);        // Replaces the stylesheet element for background color with "#EDC25E"
     }
     else {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    //! Replaces the stylesheet element for background color with "#EDC25E"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownBorderColor);        //! Replaces the stylesheet element for border color with "#663300"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    // Replaces the stylesheet element for background color with "#EDC25E"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownBorderColor);        // Replaces the stylesheet element for border color with "#663300"
     }
   }
 
-  /// Removed the border styling, as it removes the visual effect of the cells being checked
+  // Removed the border styling, as it removes the visual effect of the cells being checked
   StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderStyle, QString("solid"));       // Replaces the stylesheet element for border style with "solid"
   StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderWidth, QString("1px"));
   //  StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderStyle, QString("outset"));      // Replaces the stylesheet element for border style with "outset"
 
-  s = StyleSheetProcessor::mergeStyleSheet(map);                                                              //! Merges the stylesheet back into a single string.
-  setStyleSheet(s);        //! Sets the stylesheet of THIS widget.
-  style()->polish(this);   //! Adds back stylesheet effects.
+  s = StyleSheetProcessor::mergeStyleSheet(map);                                                              // Merges the stylesheet back into a single string.
+  setStyleSheet(s);        // Sets the stylesheet of THIS widget.
+  style()->polish(this);   // Adds back stylesheet effects.
 }
 
 ///
@@ -203,6 +210,10 @@ void Cell::assignPiece(QSharedPointer<Piece> piece)
   _myPiece->assignCell(this);
 }
 
+///
+/// \brief Cell::assignedPiece
+/// \return
+///
 QSharedPointer<Piece>& Cell::assignedPiece()
 {
 
@@ -210,9 +221,13 @@ QSharedPointer<Piece>& Cell::assignedPiece()
 
 }
 
+///
+/// \brief Cell::position
+/// \return
+///
 Cell::boardCoordinateType Cell::position()
 {
-  return boardCoordinateType(row(),column());
+  return boardCoordinateType(row(), column());
 }
 
 ///
