@@ -4,6 +4,7 @@
 #include "Pieces.h"
 #include "UserIdentity.h"
 #include "MoveRules.h"
+#include "Player.h"
 
 #include <QWidget>
 #include <QMap>
@@ -65,7 +66,8 @@ public:
   void resetBoard(bool forTheFirstTime, bool styleOnly);
 
   boardCoordinatesType getPath(boardCoordinateType pointA,
-                               boardCoordinateType pointB);
+                               boardCoordinateType pointB,
+                               boardStateMapType& boardStateToSearch);
 
   void mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location);
 
@@ -98,13 +100,42 @@ public:
   static boardStateMapType& stagingBoardStateMap();
   static void setStagingBoardStateMap(const boardStateMapType& stagingBoardStateMap);
 
+  QSharedPointer<Player>& player1();
+  void setPlayer1(const QSharedPointer<Player>& player1);
+
+  QSharedPointer<Player>& player2();
+  void setPlayer2(const QSharedPointer<Player>& player2);
+
+  bool isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked, Pieces::Identities::eIdentities identityThatIsToBeAttacked, boardCoordinatesType& container, boardStateMapType& boardStateToUse);
+
+  boardCoordinateType locationOfAttacker() const;
+  void setLocationOfAttacker(const boardCoordinateType& locationOfAttacker);
+
+  boardCoordinateType locationOfVictim() const;
+  void setLocationOfVictim(const boardCoordinateType& locationOfVictim);
+
+  definedPieceType pieceWhoWillBeAttacking() const;
+  void setPieceWhoWillBeAttacking(const definedPieceType& pieceWhoWillBeAttacking);
+
+  definedPieceType pieceWhoWillBeAttacked() const;
+  void setPieceWhoWillBeAttacked(const definedPieceType& pieceWhoWillBeAttacked);
+
+  void uncheckAllCheckedCells();
+  void highLightCoordinates(boardCoordinatesType& set);
+  void toggleCell(Cell* cell);
+
   public slots:
   void clearHighLights();
-  void endGame(bool checkMate);
 
   signals:
+  void moveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
+  void aiMoveCompletionRequired();
 
-private slots:
+  private slots:
+
+  void moveInitiated(boardCoordinateType fromWhere);
+  void continueInitiatedMove(boardCoordinateType whereTo);
+  void handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
 
 private:
   Ui::Board* ui;
@@ -120,13 +151,24 @@ private:
   boardCoordinateType _locationStart;
   boardCoordinateType _locationEnd;
 
+  boardCoordinatesType _containerForMoving;
+
+  QSharedPointer<Player> _player1;
+  QSharedPointer<Player> _player2;
+
+  boardCoordinateType _locationOfAttacker;
+  boardCoordinateType _locationOfVictim;
+  definedPieceType _pieceWhoWillBeAttacking;
+  definedPieceType _pieceWhoWillBeAttacked;
+
   void resetBoard(bool styleOnly);
-  void uncheckAllCheckedCells();
   void initializeBoardCell(Cell* cell);
   void createStartupMap(boardStateMapType& mapToInitialize);
   bool isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse);
-  void highLightCoordinates(boardCoordinatesType& set);
   void redrawBoardFromMap(boardStateMapType currentBoardStateMap);
+
+  boardCoordinateType findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound, Pieces::Identities::eIdentities identityThatIsToBeFound);
+  boardCoordinateType findPiece(definedPieceType piece);
 };
 
 #endif // BOARD_H

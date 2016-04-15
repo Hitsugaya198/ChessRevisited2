@@ -19,7 +19,7 @@ public:
 
 
 
-  ~UserIdentity() {}
+virtual ~UserIdentity() {}
 
   static UserIdentity& getInstance()
   {
@@ -27,19 +27,6 @@ public:
     return instance;
   }
 
-  eIdentities currentIdentity() const;
-//  {
-//    return _currentIdentity;
-//  }
-
-
-
-  static void switchIdentity();
-
-  void setCurrentIdentity(const eIdentities& currentIdentity, bool notify = true);
-
-signals:
-  static void identityChanged();
 
 private:
   explicit UserIdentity(QObject* parent = 0);
@@ -47,8 +34,6 @@ private:
   UserIdentity(UserIdentity const&);
   void operator=(UserIdentity const&);
 
-  static eIdentities _currentIdentity;
-  static void emitSignalInThread();
 };
 
 #endif // USERIDENTITY

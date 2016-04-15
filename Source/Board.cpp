@@ -2,6 +2,7 @@
 #include "ui_Board.h"
 
 #include "Piece.h"
+#include "TurnManager.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -16,10 +17,6 @@ piecesSetType Board::_workingCapturedPieces  = piecesSetType();
 piecesSetType Board::_backedUpCapturedPieces = piecesSetType();
 piecesSetType Board::_stagingCapturedPieces  = piecesSetType();
 
-///
-/// \brief Board::Board
-/// \param parent
-///
 Board::Board(QWidget* parent):
   QWidget(parent),
   ui(new Ui::Board)
@@ -28,21 +25,11 @@ Board::Board(QWidget* parent):
   resetBoard(true, true);
 }
 
-///
-/// \brief Board::~Board
-///
 Board::~Board()
 {
 
 }
 
-///
-/// \brief Board::updatePieceMap
-/// \param from
-/// \param to
-/// \param boardStateMap
-/// \param capturedPiecesContainer
-///
 void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesSetType& capturedPiecesContainer)
 {
   boardCoordinateType fromCoords = boardCoordinateType(from->row(), from->column());
@@ -65,9 +52,6 @@ void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMa
   boardStateMap.insert(toCoords, fromType); // puts it in its new location
 }
 
-///
-/// \brief Board::clearHighLights
-///
 void Board::clearHighLights()
 {
   for (int row = 1; row <= 8; ++row)
@@ -83,99 +67,255 @@ void Board::clearHighLights()
     }
 }
 
-///
-/// \brief Board::playerReadyToMovePhase1
-/// \param startingPosition
-///
-void Board::playerReadyToMovePhase1(boardCoordinateType startingPosition)
+void Board::moveInitiated(boardCoordinateType fromWhere)
 {
-  QMutexLocker locker(&_flowLocker);
-  Cell* fromCell = getCell(startingPosition);
-
-  // Get the information on the selected piece
-  definedPieceType pieceOnCell = definedPieceType(fromCell->assignedPiece()->identity(),
-                                                  fromCell->assignedPiece()->color());
-
-  // Make sure it is an actual piece and not an empty cell
-  if (pieceOnCell.first == Pieces::Identities::eNone) {
-    emit playerReadyToMovePhase1Complete(false);
+  // validate that there is actually a piece there on the board.
+  if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eNone ||
+      getCell(fromWhere)->assignedPiece()->color() == Pieces::PieceColors::eNone) {
+    clearHighLights();
+    uncheckAllCheckedCells();
     return;
   }
 
-  // It's a real piece, the move was initiated by the correct player.
-  // But is the player moving the piece its owner?
-  // Human player always moves the white pieces
-  if (UserIdentity::getInstance().currentIdentity() == UserIdentity::eHuman) {
-    // Piece has to be white
-    if (pieceOnCell.second != Pieces::PieceColors::eWhite) {
-      emit playerReadyToMovePhase1Complete(false);
+  // Check that the right user is attempting to move
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
+    // Pieces must be white
+    if (getCell(fromWhere)->assignedPiece()->color() != Pieces::PieceColors::eWhite) {
+      clearHighLights();
+      uncheckAllCheckedCells();
       return;
     }
   }
 
-  // AI player always moves the black pieces
-  if (UserIdentity::getInstance().currentIdentity() == UserIdentity::eComputer) {
-    // Piece has to be black
-    if (pieceOnCell.second != Pieces::PieceColors::eBlack) {
-//      emit playerReadyToMovePhase1Complete(false);
-      emit playerActionRequired(UserIdentity::getInstance().currentIdentity());
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eComputer) {
+    // Pieces must be Black
+    if (getCell(fromWhere)->assignedPiece()->color() != Pieces::PieceColors::eBlack) {
+      clearHighLights();
+      uncheckAllCheckedCells();
       return;
     }
   }
 
-  // Assess the current board state to ascertain if the current player's
-  // king is in check.
-  bool yourKingIsChecked = false;
-  boardCoordinatesType container = boardCoordinatesType();
-  _pieceWhoWillBeAttacking = definedPieceType();
-  _locationOfAttacker = boardCoordinateType();
-  MoveRules::movementType rules = MoveRules::getMovementRules(pieceOnCell.first, pieceOnCell.second);
+  boardCoordinatesType containerForHighlighting = boardCoordinatesType();
 
-  // If human player, check if the white king is checked by ANY enemy piece
-  yourKingIsChecked = isTheTargetWithinRange(pieceOnCell.second, Pieces::Identities::eKing, container);
+  // If we reach this point, it is a real piece, and it is the right color for the user trying to move it.
+  // Let's evaluate the current boardState
 
-  if (yourKingIsChecked) {
+  bool boardIsValid = evaluateBoardState(_workingBoardStateMap);
+
+  // This would imply the King of the current player is checked, so valid moves
+  if (!boardIsValid) {
     // see if any potential moves can bring the board into a legal state (uncheck the king)
     // first check if the selected cell can attack the offender
-    boardCoordinatesType set = getPath(startingPosition, _locationOfAttacker);
-    bool canItBeAttacked = !set.isEmpty();
-    if (canItBeAttacked) {
-      // Highlight the way
-      highLightCoordinates(set);
+
+    MoveRules::movementType rules = MoveRules::getMovementRules(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
+    definedPieceType currentPiece = definedPieceType(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
+    boardCoordinatesType container = boardCoordinatesType();
+
+    // Map it's possible moves.  mapMoves() only returns "legal" moves
+    mapMoves(rules, currentPiece, container, fromWhere);
+
+    if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eKnight) {
+      // Knight's path is L-shaped, not straight horizontal/vertical/diagonal like the other pieces
+      // It is a piece, it is the right color.  Map it's move-rules
+
+      if (!container.isEmpty()) {
+        bool canItBeAttacked = container.contains(_locationOfAttacker);
+        if (canItBeAttacked) {
+          // Attack the bugger
+        }
+        else {
+          // try to block his path
+          boardCoordinatesType set = getPath(_locationOfVictim, _locationOfAttacker, _workingBoardStateMap);
+          bool pathCanBePotentiallyBlocked = !set.isEmpty();
+          if (pathCanBePotentiallyBlocked) {
+            boardCoordinatesType possibleMoves = set.intersect(container);
+            if (!possibleMoves.isEmpty()) {
+              // record the starting-cell, highlight the outcomes
+              _locationStart = fromWhere;
+              containerForHighlighting = possibleMoves;
+            }
+            else {
+              // Selected piece has no available moves.
+            }
+          }
+        }
+      }
     }
     else {
-      // Can this piece block the attacker's path?
-      // It is a piece, it is the right color.  Map it's moves
-      mapMoves(rules, pieceOnCell, container, startingPosition);
+      boardCoordinatesType set = getPath(fromWhere, _locationOfAttacker, _workingBoardStateMap);
 
-      boardCoordinateType locationOfKing = findPiece(pieceOnCell.second, Pieces::Identities::eKing);
-
-      boardCoordinatesType pathFromAttackerToKing = getPath(_locationOfAttacker, locationOfKing);
-
-      if (!container.intersect(pathFromAttackerToKing).isEmpty()) {
-        container = container.intersect(pathFromAttackerToKing);
-        highLightCoordinates(container);
+      bool canItBeAttacked = !set.isEmpty();
+      // If we can attack it directly, there will be a path to it.
+      if (canItBeAttacked) {
+        // Highlight the way
+        _locationStart = fromWhere;
+        containerForHighlighting = set;
       }
-      else {
-        emit playerReadyToMovePhase1Complete(false);
-        return;
+      else { // can we block its path?
+        set = getPath(_locationOfVictim, _locationOfAttacker, _workingBoardStateMap);
+        bool pathCanBePotentiallyBlocked = !set.isEmpty();
+        if (pathCanBePotentiallyBlocked) {
+          boardCoordinatesType possibleMoves = set.intersect(container);
+          if (!possibleMoves.isEmpty()) {
+            // record the starting-cell, highlight the outcomes
+            _locationStart = fromWhere;
+            containerForHighlighting = possibleMoves;
+          }
+          else {
+            // Selected piece has no available moves.
+          }
+        }
       }
     }
   }
   else {
-    // Map possible moves and highlight them
-    mapMoves(rules, pieceOnCell, container, startingPosition);
-    // highlight possible moves
-    highLightCoordinates(container);
+    // Board is in a valid state (your king is not in danger)
+    MoveRules::movementType rules = MoveRules::getMovementRules(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
+    definedPieceType currentPiece = definedPieceType(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
+    boardCoordinatesType container = boardCoordinatesType();
+
+    // Map it's possible moves.  mapMoves() only returns "legal" moves
+    mapMoves(rules, currentPiece, container, fromWhere);
+
+
+    if (!container.isEmpty()) {
+      // One last check to see if any of the proposed moves will in fact result in an invalid board state.
+      boardCoordinatesType::iterator containerIterator = container.begin();
+      while (containerIterator != container.end()) {
+        boardStateMapType tempState = _workingBoardStateMap;
+        piecesSetType tempPieces = _workingCapturedPieces;
+        boardCoordinateType toWhere = *containerIterator;
+        Cell* from = getCell(fromWhere);
+        Cell* to = getCell(toWhere);
+        movePieceStart(this, from, to, tempState, tempPieces);
+
+        bool boardStillValid = evaluateBoardState(tempState);
+        if (!boardStillValid) { // this will check the current player's king
+          container.remove(toWhere);
+          containerIterator = container.begin();
+        }
+        else {
+          ++containerIterator;
+        }
+        movePieceRevertMove(tempState, tempPieces);
+      }
+
+      if (!container.isEmpty()) {
+        _locationStart = fromWhere;
+        containerForHighlighting = container;
+      }
+    }
   }
-  if (container.isEmpty()) { // piece has no moves available
-    emit playerReadyToMovePhase1Complete(false);
+
+  if (containerForHighlighting.isEmpty()) {
+    clearHighLights();
+    uncheckAllCheckedCells();
     return;
   }
-  _locationStart = startingPosition;
-  emit playerReadyToMovePhase1Complete(true);
-  return;
+  else {
+    highLightCoordinates(containerForHighlighting);
+    _containerForMoving = containerForHighlighting;
+  }
+
+  emit moveInitiatedComplete(TurnManager::getInstance().currentPlayer());
 }
+
+void Board::continueInitiatedMove(boardCoordinateType whereTo)
+{
+  _locationEnd = whereTo;
+
+  // check if the move will be allowed
+  if (_containerForMoving.contains(whereTo)) {
+    Cell* whereFrom = getCell(_locationStart);
+    Cell* whereTo =   getCell(_locationEnd);
+    movePieceStart(this, whereFrom, whereTo);
+    movePieceCompleteMove(this);
+
+    if(TurnManager::getInstance().currentPlayer()->identity() == UserIdentity::eHuman)
+    {
+      TurnManager::switchPlayers(_player2);
+    }
+    else
+    {
+      TurnManager::switchPlayers(_player1);
+    }
+
+  }
+  else {
+    clearHighLights();
+    uncheckAllCheckedCells();
+  }
+}
+
+void Board::handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated)
+{
+  if(playerWhoInitiated->identity() == player2()->identity())
+  {
+    emit aiMoveCompletionRequired();
+  }
+}
+definedPieceType Board::pieceWhoWillBeAttacked() const
+{
+  return _pieceWhoWillBeAttacked;
+}
+
+void Board::setPieceWhoWillBeAttacked(const definedPieceType& pieceWhoWillBeAttacked)
+{
+  _pieceWhoWillBeAttacked = pieceWhoWillBeAttacked;
+}
+
+definedPieceType Board::pieceWhoWillBeAttacking() const
+{
+  return _pieceWhoWillBeAttacking;
+}
+
+void Board::setPieceWhoWillBeAttacking(const definedPieceType& pieceWhoWillBeAttacking)
+{
+  _pieceWhoWillBeAttacking = pieceWhoWillBeAttacking;
+}
+
+boardCoordinateType Board::locationOfVictim() const
+{
+  return _locationOfVictim;
+}
+
+void Board::setLocationOfVictim(const boardCoordinateType& locationOfVictim)
+{
+  _locationOfVictim = locationOfVictim;
+}
+
+boardCoordinateType Board::locationOfAttacker() const
+{
+  return _locationOfAttacker;
+}
+
+void Board::setLocationOfAttacker(const boardCoordinateType& locationOfAttacker)
+{
+  _locationOfAttacker = locationOfAttacker;
+}
+
+
+QSharedPointer<Player>& Board::player2()
+{
+  return _player2;
+}
+
+void Board::setPlayer2(const QSharedPointer<Player>& player2)
+{
+  _player2 = player2;
+}
+
+QSharedPointer<Player>& Board::player1()
+{
+  return _player1;
+}
+
+void Board::setPlayer1(const QSharedPointer<Player>& player1)
+{
+  _player1 = player1;
+}
+
 
 boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound,
                                      Pieces::Identities::eIdentities identityThatIsToBeFound)
@@ -281,79 +421,12 @@ void Board::highLightCoordinates(boardCoordinatesType& set)
   }
 }
 
-bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
-                                   Pieces::Identities::eIdentities identityThatIsToBeAttacked,
-                                   boardCoordinatesType& container,
-                                   boardStateMapType& boardStateToUse)
+void Board::toggleCell(Cell* cell)
 {
-  Pieces::PieceColors::ePieceColors attackerColor = Pieces::flipColor(colorThatIsToBeAttacked);
-  boardCoordinatesType targetsLocation;
-  boardCoordinateType targetLocation = boardCoordinateType(0, 0);
-
-  boardCoordinateType failure = boardCoordinateType(0, 0);
-  targetsLocation = findPieces(definedPieceType(identityThatIsToBeAttacked, colorThatIsToBeAttacked));
-  if (targetsLocation.contains(failure)) {
-    return false;
-  }
-
-  boardCoordinatesType::iterator boardCoordsIterator;
-  bool useIterator = false;
-//  if (targetLocation.first == 0 || targetLocation.second == 0) {
-  boardCoordsIterator = targetsLocation.begin();
-  useIterator = true;
-//  }
-
-
-  for (int i = 0; i < targetsLocation.size(); ++i) {
-
-    targetLocation = *boardCoordsIterator;
-    ++boardCoordsIterator;
-
-    // So now that we know where the target is, iterate through all enemy pieces, map their moves and
-    // see if any legal move includes the target's location.
-    for (int row = eMinRow; row <= eMaxRow; ++row) {
-      for (int column = eMinColumn; column <= eMaxColumn; ++column) {
-        boardCoordinateType currentCoordinate = boardCoordinateType(row, column);
-        definedPieceType currentPiece = boardStateToUse.value(currentCoordinate);
-
-        Pieces::Identities::eIdentities currentPieceIdentity = currentPiece.first;
-        Pieces::PieceColors::ePieceColors currentPieceColor = currentPiece.second;
-
-        if (currentPieceIdentity == Pieces::Identities::eNone) {
-          // No piece on this cell
-          continue;
-        }
-        if (currentPieceColor != attackerColor) {
-          // Wrong color for attacker
-          continue;
-        }
-        // It is a piece, it is the right color.  Map it's moves
-        MoveRules::movementType rules = MoveRules::getMovementRules(currentPieceIdentity, currentPieceColor);
-
-        mapMoves(rules, currentPiece, container, currentCoordinate);
-        definedPieceType pieceToAttack = definedPieceType(identityThatIsToBeAttacked,
-                                                          colorThatIsToBeAttacked); //_currentBoardStateMap.value(currentCoordinate);
-
-        if (container.contains(targetLocation)) {
-          _locationOfAttacker = currentCoordinate;
-          _locationOfVictim = targetLocation;
-          _pieceWhoWillBeAttacking = currentPiece;
-          _pieceWhoWillBeAttacked = pieceToAttack;
-          return true;
-        }
-      }
-    }
-  }
-  container.clear();
-  return false;
+  cell->toggle();
 }
 
-bool Board::isTheTargetWithinRange(boardCoordinateType locationToAttackFrom, boardCoordinateType locationToAttack)
-{
-  return (!getPath(locationToAttackFrom, locationToAttack).isEmpty());
-}
-
-boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateType pointB)
+boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateType pointB, boardStateMapType& boardStateToSearch)
 {
   boardCoordinatesType returnSet;
   int rowA = pointA.first;
@@ -372,7 +445,7 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
     // Only need to iterate through the x-axis
     for (int i = columnMin + 1; i <= columnMax; ++i) {
       boardCoordinateType temp = boardCoordinateType(rowMax, i);
-      if (_workingBoardStateMap.value(temp).first != Pieces::Identities::eNone) {
+      if (boardStateToSearch.value(temp).first != Pieces::Identities::eNone) {
         // There is a piece between you and your destination.
         if (i != columnMax) { // If it is not the destination block, somebody is in your way.
           returnSet = boardCoordinatesType();
@@ -398,7 +471,7 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
     // Only need to iterate through the x-axis
     for (int j = rowMin + 1; j <= rowMax; ++j) {
       boardCoordinateType temp = boardCoordinateType(j, columnMax);
-      if (_workingBoardStateMap.value(temp).first != Pieces::Identities::eNone) {
+      if (boardStateToSearch.value(temp).first != Pieces::Identities::eNone) {
         // There is a piece between you and your destination.
         if (j != rowMax) { // If it is not the destination block, somebody is in your way.
           returnSet = boardCoordinatesType();
@@ -442,7 +515,7 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
   for (int row = rowA + stepFactorRows; row != rowB; row += stepFactorRows) {
     for (int col = newColumn + stepFactorColumns; col != columnB; col += stepFactorColumns) {
       boardCoordinateType temp = boardCoordinateType(row, col);
-      if (_workingBoardStateMap.value(temp).first != Pieces::Identities::eNone) {
+      if (boardStateToSearch.value(temp).first != Pieces::Identities::eNone) {
         // There is a piece between you and your destination.
         if (col != columnB - stepFactorColumns && row != rowB - stepFactorRows) { // If it is not the destination block, somebody is in your way.
           returnSet = boardCoordinatesType();
@@ -468,7 +541,7 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 {
   boardCoordinatesType container;
   Pieces::PieceColors::ePieceColors color;
-  if (UserIdentity::getInstance().currentIdentity() == UserIdentity::eHuman) {
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
     color = Pieces::PieceColors::eWhite;
   }
   else {
@@ -482,6 +555,71 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
   }
 
   return true;
+}
+
+bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
+                                   Pieces::Identities::eIdentities identityThatIsToBeAttacked,
+                                   boardCoordinatesType& container,
+                                   boardStateMapType& boardStateToUse)
+{
+  Pieces::PieceColors::ePieceColors attackerColor = Pieces::flipColor(colorThatIsToBeAttacked);
+  boardCoordinatesType targetsLocation;
+  boardCoordinateType targetLocation = boardCoordinateType(0, 0);
+
+  boardCoordinateType failure = boardCoordinateType(0, 0);
+  targetsLocation = findPieces(definedPieceType(identityThatIsToBeAttacked, colorThatIsToBeAttacked), boardStateToUse);
+  if (targetsLocation.contains(failure)) {
+    return false;
+  }
+
+  boardCoordinatesType::iterator boardCoordsIterator;
+  bool useIterator = false;
+  boardCoordsIterator = targetsLocation.begin();
+  useIterator = true;
+
+
+  for (int i = 0; i < targetsLocation.size(); ++i) {
+
+    targetLocation = *boardCoordsIterator;
+    ++boardCoordsIterator;
+
+    // So now that we know where the target is, iterate through all enemy pieces, map their moves and
+    // see if any legal move includes the target's location.
+    for (int row = eMinRow; row <= eMaxRow; ++row) {
+      for (int column = eMinColumn; column <= eMaxColumn; ++column) {
+        boardCoordinateType currentCoordinate = boardCoordinateType(row, column);
+        definedPieceType currentPiece = boardStateToUse.value(currentCoordinate);
+
+        Pieces::Identities::eIdentities currentPieceIdentity = currentPiece.first;
+        Pieces::PieceColors::ePieceColors currentPieceColor = currentPiece.second;
+
+        if (currentPieceIdentity == Pieces::Identities::eNone) {
+          // No piece on this cell
+          continue;
+        }
+        if (currentPieceColor != attackerColor) {
+          // Wrong color for attacker
+          continue;
+        }
+        // It is a piece, it is the right color.  Map it's moves
+        MoveRules::movementType rules = MoveRules::getMovementRules(currentPieceIdentity, currentPieceColor);
+
+        mapMoves(rules, currentPiece, container, currentCoordinate);
+        definedPieceType pieceToAttack = definedPieceType(identityThatIsToBeAttacked,
+                                                          colorThatIsToBeAttacked); //_currentBoardStateMap.value(currentCoordinate);
+
+        if (container.contains(targetLocation)) {
+          _locationOfAttacker      = currentCoordinate;
+          _locationOfVictim        = targetLocation;
+          _pieceWhoWillBeAttacking = currentPiece;
+          _pieceWhoWillBeAttacked  = pieceToAttack;
+          return true;
+        }
+      }
+    }
+  }
+  container.clear();
+  return false;
 }
 
 void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStateMapType& scenario, piecesSetType& scenarioPieces)
@@ -882,66 +1020,6 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
   }
 }
 
-///
-/// \brief Board::playerReadyToMovePhase2
-/// \param endingPosition
-///
-void Board::playerReadyToMovePhase2(boardCoordinateType endingPosition)
-{
-  _locationEnd = endingPosition;
-
-  boardCoordinatesType container;
-  definedPieceType piece = definedPieceType(getCell(_locationStart)->assignedPiece()->identity(),
-                                            getCell(_locationStart)->assignedPiece()->color());
-  MoveRules::movementType rules = MoveRules::getMovementRules(piece.first, piece.second);
-  mapMoves(rules, piece, container, _locationStart);
-  if (!isMoveLegal(_locationStart, _locationEnd, container)) {
-    uncheckAllCheckedCells();
-    clearHighLights();
-    getCell(_locationEnd)->resetCheckedCounter();
-    emit playerActionRequired(UserIdentity::getInstance().currentIdentity());
-    return;
-  }
-
-//  if (UserIdentity::getInstance().currentIdentity() == UserIdentity::eComputer) {
-    QThread::msleep(200);
-//  }
-
-
-  // start the Move
-  movePieceStart(this, getCell(_locationStart), getCell(_locationEnd));
-  _moveSucceeded = evaluateBoardState(_workingBoardStateMap);
-  if (!_moveSucceeded) {
-    movePieceRevertMove();
-  }
-
-  movePieceCompleteMove(this);
-
-
-  if (_moveSucceeded) {
-    QThread::msleep(400);
-    UserIdentity::getInstance().switchIdentity();
-  }
-  else {
-    emit playerActionRequired(UserIdentity::getInstance().currentIdentity());
-  }
-}
-
-void Board::handlePhase1Complete(bool canProceedToPhase2)
-{
-//  qDebug() << "Phase 1 complete.  Can proceed?" << canProceedToPhase2;
-
-  if (!canProceedToPhase2) {
-    // Uncheck all cells, reset the checkedCounter
-    uncheckAllCheckedCells();
-    UserIdentity::getInstance().setCurrentIdentity(UserIdentity::eComputer, false);
-    emit playerActionRequired(UserIdentity::eComputer);
-  }
-  else {
-    emit playerMoveToPhase2();
-  }
-
-}
 boardStateMapType& Board::stagingBoardStateMap()
 {
   return _stagingBoardStateMap;
@@ -1003,61 +1081,6 @@ void Board::setWorkingCapturedPieces(const piecesSetType& workingCapturedPieces)
 }
 
 
-void Board::endGame(bool checkMate)
-{
-  setEnabled(false);
-  if (checkMate) {
-    QMessageBox::information(0, QString("Game Over"), QString("Check and mate!"), QMessageBox::Ok);
-  }
-  else {
-    QMessageBox::information(0, QString("Game Over"), QString("The game has gone stale."), QMessageBox::Ok);
-  }
-}
-definedPieceType Board::pieceWhoWillBeAttacked() const
-{
-  return _pieceWhoWillBeAttacked;
-}
-
-void Board::setPieceWhoWillBeAttacked(const definedPieceType& pieceWhoWillBeAttacked)
-{
-  _pieceWhoWillBeAttacked = pieceWhoWillBeAttacked;
-}
-
-boardCoordinateType Board::locationOfVictim() const
-{
-  return _locationOfVictim;
-}
-
-void Board::setLocationOfVictim(const boardCoordinateType& locationOfVictim)
-{
-  _locationOfVictim = locationOfVictim;
-}
-
-definedPieceType Board::pieceWhoWillBeAttacking() const
-{
-  return _pieceWhoWillBeAttacking;
-}
-
-void Board::setPieceWhoWillBeAttacking(const definedPieceType& pieceWhoWillBeAttacking)
-{
-  _pieceWhoWillBeAttacking = pieceWhoWillBeAttacking;
-}
-
-boardCoordinateType Board::locationOfAttacker() const
-{
-  return _locationOfAttacker;
-}
-
-void Board::setLocationOfAttacker(const boardCoordinateType& locationOfAttacker)
-{
-  _locationOfAttacker = locationOfAttacker;
-}
-
-
-///
-/// \brief Board::resetBoard
-/// \param styleOnly
-///
 void Board::resetBoard(bool styleOnly)
 {
   resetBoard(false, styleOnly);
@@ -1107,11 +1130,6 @@ void Board::redrawBoardFromMap(boardStateMapType currentBoardStateMap)
   }
 }
 
-///
-/// \brief Board::resetBoard
-/// \param forTheFirstTime
-/// \param styleOnly
-///
 void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
 {
   //! Create a startup map for new games
@@ -1128,8 +1146,9 @@ void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
       if (cell != nullptr) {
 
         if (forTheFirstTime) {
-          connect(cell, SIGNAL(startingANewMove(boardCoordinateType)), this, SLOT(playerReadyToMovePhase1(boardCoordinateType)));
-          connect(cell, SIGNAL(completingMove(boardCoordinateType)), this, SLOT(playerReadyToMovePhase2(boardCoordinateType)));
+          // What to connect these cells to?
+          connect(cell, SIGNAL(startingANewMove(boardCoordinateType)), this, SLOT(moveInitiated(boardCoordinateType)));
+          connect(cell, SIGNAL(completingMove(boardCoordinateType)), this, SLOT(continueInitiatedMove(boardCoordinateType)));
           connect(cell, SIGNAL(nothingToDo()), this, SLOT(clearHighLights()));
           cell->setCoordinate(row, column);
         }
@@ -1140,21 +1159,12 @@ void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
         }
       }
     }
-  if (!styleOnly) {
-    UserIdentity::getInstance().setCurrentIdentity(UserIdentity::eHuman);
-  }
   if (forTheFirstTime) {
-    connect(this, SIGNAL(playerReadyToMovePhase1Complete(bool)), this, SLOT(handlePhase1Complete(bool)));
+    connect(this, SIGNAL(moveInitiatedComplete(QSharedPointer<Player>&)), this, SLOT(handleMoveInitiatedComplete(QSharedPointer<Player>&)));
   }
   setEnabled(true);
 }
 
-///
-/// \brief Board::getCell
-/// \param row
-/// \param column
-/// \return
-///
 Cell* Board::getCell(int row, int column) const
 {
   QGridLayout* parentLayout = ui->gridLayout;
@@ -1170,35 +1180,22 @@ Cell* Board::getCell(int row, int column) const
   return theRealCell;
 }
 
-///
-/// \brief Board::getCell
-/// \param position
-/// \return
-///
 Cell* Board::getCell(boardCoordinateType position) const
 {
   return getCell(position.first, position.second);
 }
 
-///
-/// \brief Board::initializeBoardCell
-/// \param cell
-///
 void Board::initializeBoardCell(Cell* cell)
 {
   boardCoordinateType coordinate(cell->position());
   definedPieceType piece = _workingBoardStateMap.value(coordinate);
 
-  //! This cell needs a piece
+  // This cell needs a piece
   QSharedPointer<Piece> pieceInstance = QSharedPointer<Piece>(new Piece(piece.first, piece.second));
 
   cell->assignPiece(pieceInstance);
 }
 
-///
-/// \brief Board::createStartupMap
-/// \param mapToInitialize
-///
 void Board::createStartupMap(boardStateMapType& mapToInitialize)
 {
   if (mapToInitialize.isEmpty()) {

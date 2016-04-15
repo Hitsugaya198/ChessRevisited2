@@ -86,27 +86,26 @@ void Cell::handleCellToggled(bool checked)
 {
   // Starting a new move
   if (_checkedCounter == 0 && checked) {
-//    qDebug() << "Starting a new move";
     ++_checkedCounter;
+    highLightCell(true);
     emit startingANewMove(position());
     return;
   }
   // Continuing previous move
   else if (_checkedCounter == 1 && checked) {
-//    qDebug() << "Continuing previous move";
     --_checkedCounter;
     emit completingMove(position());
     return;
   }
   // Unchecking a cell (changed your mind?)
   else if (_checkedCounter == 1 && !checked) {
-//    qDebug() << "Unchecking a cell (changed your mind?)";
     --_checkedCounter;
   }
   else if(_checkedCounter > 1 || _checkedCounter < 0)
   {
-//    qDebug() << "Something broke, don't know what to do!";
+    _checkedCounter = 0;
   }
+  highLightCell(false);
   emit nothingToDo();
 }
 
@@ -145,14 +144,14 @@ void Cell::setColor(bool highLight)
   if (highLight) {
     brownColor = Colors::getInstance().getHiBrown();
     beigeColor = Colors::getInstance().getHiBeige();
-    brownBorderColor = Colors::getInstance().getBrown();
-    beigeBorderColor = Colors::getInstance().getBeige();
+    brownBorderColor = Colors::getInstance().getHiBrown();
+    beigeBorderColor = Colors::getInstance().getHiBeige();
   }
   else {
     brownColor = Colors::getInstance().getBrown();
     beigeColor = Colors::getInstance().getBeige();
-    brownBorderColor = Colors::getInstance().getHiBrown();
-    beigeBorderColor = Colors::getInstance().getHiBeige();
+    brownBorderColor = Colors::getInstance().getBrown();
+    beigeBorderColor = Colors::getInstance().getBeige();
   }
 
   //! And then use that "id" to determine the color.
