@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/Pieces">
+        <file>Resources/Black/Bishop.png</file>
+        <file>Resources/Black/Castle.png</file>
+        <file>Resources/Black/King.png</file>
+        <file>Resources/Black/Knight.png</file>
+        <file>Resources/Black/Pawn.png</file>
+        <file>Resources/Black/Queen.png</file>
+        <file>Resources/Black/None.png</file>
+        <file>Resources/White/Bishop.png</file>
+        <file>Resources/White/Castle.png</file>
+        <file>Resources/White/King.png</file>
+        <file>Resources/White/Knight.png</file>
+        <file>Resources/White/None.png</file>
+        <file>Resources/White/Pawn.png</file>
+        <file>Resources/White/Queen.png</file>
+    </qresource>
+    <qresource prefix="/Icons">
+        <file>Resources/chess_logo.png</file>
+    </qresource>
+</RCC>
