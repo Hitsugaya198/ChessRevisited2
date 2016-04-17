@@ -37,6 +37,33 @@ Chess::Chess(QWidget* parent) :
   connect(ui->_theGameBoard, SIGNAL(updateCapturedPiecesSignal()),
           this, SLOT(updateCapturedPieces()));
 
+  _blackScrollArea = new QScrollArea(ui->_blackPiecesArea);
+  _whiteScrollArea = new QScrollArea(ui->_whitePiecesArea);
+
+  _blackScrollArea->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+  _whiteScrollArea->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+
+  _blackScrollArea->setWidgetResizable( true );
+  _whiteScrollArea->setWidgetResizable( true );
+
+  _blackContainer = new QWidget(_blackScrollArea);
+  _whiteContainer = new QWidget(_whiteScrollArea);
+
+  _blackScrollArea->setWidget(_blackContainer);
+  _whiteScrollArea->setWidget(_whiteContainer);
+
+  _blackLayout = new QVBoxLayout(_blackContainer);
+  _blackContainer->setLayout(_blackLayout);
+
+  _whiteLayout = new QVBoxLayout(_whiteContainer);
+  _whiteContainer->setLayout(_whiteLayout);
+
+  QLayout* lay = ui->_blackPiecesArea->layout();
+  lay->addWidget(_blackScrollArea);
+
+  lay = ui->_whitePiecesArea->layout();
+  lay->addWidget(_whiteScrollArea);
+
   on_action_New_Game_triggered();
 }
 
@@ -98,40 +125,8 @@ void Chess::endGame(bool checkMate)
 ///
 void Chess::updateCapturedPieces()
 {
-  QWidget* whitePiecesContainer = ui->_whitePiecesScroller;
-  QWidget* blackPiecesContainer = ui->_blackPiecesScroller;
-
-  QLayout* whiteLayout = whitePiecesContainer->layout();
-  QLayout* blackLayout = blackPiecesContainer->layout();
-
-  QVBoxLayout* castedWhiteLayout = dynamic_cast<QVBoxLayout*>(whiteLayout);
-  QVBoxLayout* castedBlackLayout = dynamic_cast<QVBoxLayout*>(blackLayout);
-
-  QVBoxLayout* newWhiteLayout;
-  QVBoxLayout* newBlackLayout;
-
-  if(castedBlackLayout == 0)
-  {
-    newBlackLayout = new QVBoxLayout();
-    delete blackLayout;
-  }
-  else
-  {
-    newBlackLayout = castedBlackLayout;
-  }
-
-  if(castedWhiteLayout == 0)
-  {
-    newWhiteLayout = new QVBoxLayout();
-    delete whiteLayout;
-  }
-  else
-  {
-    newWhiteLayout = castedWhiteLayout;
-  }
-
-  clearLayout(newBlackLayout);
-  clearLayout(newWhiteLayout);
+  clearLayout(_blackLayout);
+  clearLayout(_whiteLayout);
 
   piecesListType capturedPieces = ui->_theGameBoard->workingCapturedPieces();
   piecesListType::iterator i = capturedPieces.begin();
@@ -153,18 +148,16 @@ void Chess::updateCapturedPieces()
     {
       case Pieces::PieceColors::eBlack:
       {
-        newBlackLayout->addWidget(capturedPiece);
+        _blackLayout->addWidget(capturedPiece);
         break;
       }
       case Pieces::PieceColors::eWhite:
       {
-        newWhiteLayout->addWidget(capturedPiece);
+        _whiteLayout->addWidget(capturedPiece);
         break;
       }
     }
   }
-  whitePiecesContainer->setLayout(newWhiteLayout);
-  blackPiecesContainer->setLayout(newBlackLayout);
 }
 
 ///

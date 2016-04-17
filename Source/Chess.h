@@ -6,6 +6,9 @@
 #include "CapturedPieceWidget.h"
 
 #include <QMainWindow>
+#include <QScrollArea>
+#include <QVBoxLayout>
+#include <QWidget>
 
 namespace Ui
 {
@@ -38,6 +41,15 @@ private:
   QList<CapturedPieceWidget> _blackPieces;
   QList<CapturedPieceWidget> _whitePieces;
   void clearLayout(QLayout* layout);
+
+  QScrollArea* _blackScrollArea;
+  QScrollArea* _whiteScrollArea;
+
+  QWidget* _blackContainer;
+  QWidget* _whiteContainer;
+
+  QVBoxLayout* _blackLayout;
+  QVBoxLayout* _whiteLayout;
 };
 
 #endif // CHESS_H
