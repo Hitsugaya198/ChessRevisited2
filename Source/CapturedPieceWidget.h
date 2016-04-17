@@ -14,6 +14,7 @@ class CapturedPieceWidget : public QWidget
   public:
     explicit CapturedPieceWidget(QWidget *parent = 0);
     ~CapturedPieceWidget();
+  void setPixmap (const QPixmap& pixmap);
 
   private:
     Ui::CapturedPieceWidget *ui;

@@ -27,7 +27,7 @@ namespace    //anonymous
   typedef QSet < boardCoordinateType > boardCoordinatesType;
   typedef QPair < Pieces::Identities::eIdentities, Pieces::PieceColors::ePieceColors > definedPieceType;
   typedef QMap < boardCoordinateType, definedPieceType > boardStateMapType;
-  typedef QSet < definedPieceType > piecesSetType;
+  typedef QList < definedPieceType > piecesListType;
 }
 
 class Board : public QWidget
@@ -58,7 +58,7 @@ public:
   explicit Board(QWidget* parent = 0);
   virtual ~Board();
 
-  void updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesSetType& capturedPiecesContainer);
+  void updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesListType& capturedPiecesContainer);
 
   Cell* getCell(int row, int column) const;
   Cell* getCell(boardCoordinateType position) const;
@@ -77,19 +77,19 @@ public:
                              Cell* fromCell,
                              Cell* toCell,
                              boardStateMapType& scenario = _workingBoardStateMap,
-                             piecesSetType& scenarioPieces = _workingCapturedPieces);
+                             piecesListType& scenarioPieces = _workingCapturedPieces);
   static void movePieceCompleteMove(Board* _this, boardStateMapType& scenario = _workingBoardStateMap);
   static void movePieceRevertMove(boardStateMapType& scenario = _workingBoardStateMap,
-                                  piecesSetType& scenarioPieces = _workingCapturedPieces);
+                                  piecesListType& scenarioPieces = _workingCapturedPieces);
 
-  static piecesSetType& workingCapturedPieces();
-  static void setWorkingCapturedPieces(const piecesSetType& workingCapturedPieces);
+  static piecesListType& workingCapturedPieces();
+  static void setWorkingCapturedPieces(const piecesListType& workingCapturedPieces);
 
-  static piecesSetType& backedUpCapturedPieces();
-  static void setBackedUpCapturedPieces(const piecesSetType& backedUpCapturedPieces);
+  static piecesListType& backedUpCapturedPieces();
+  static void setBackedUpCapturedPieces(const piecesListType& backedUpCapturedPieces);
 
-  static piecesSetType& stagingCapturedPieces();
-  static void setStagingCapturedPieces(const piecesSetType& stagingCapturedPieces);
+  static piecesListType& stagingCapturedPieces();
+  static void setStagingCapturedPieces(const piecesListType& stagingCapturedPieces);
 
   static boardStateMapType& workingBoardStateMap();
   static void setWorkingBoardStateMap(const boardStateMapType& workingBoardStateMap);
@@ -130,22 +130,23 @@ public slots:
 signals:
   void moveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
   void aiMoveCompletionRequired();
+  void updateCapturedPiecesSignal();
 
 private slots:
-
   void moveInitiated(boardCoordinateType fromWhere);
   void continueInitiatedMove(boardCoordinateType whereTo);
   void handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
   void timerEvent(QTimerEvent* event);
+
 private:
   Ui::Board* ui;
   static boardStateMapType _workingBoardStateMap;
   static boardStateMapType _backedUpBoardStateMap;
   static boardStateMapType _stagingBoardStateMap;
 
-  static piecesSetType _workingCapturedPieces;
-  static piecesSetType _backedUpCapturedPieces;
-  static piecesSetType _stagingCapturedPieces;
+  static piecesListType _workingCapturedPieces;
+  static piecesListType _backedUpCapturedPieces;
+  static piecesListType _stagingCapturedPieces;
 
   boardCoordinateType _locationStart;
   boardCoordinateType _locationEnd;
@@ -168,6 +169,7 @@ private:
 
   boardCoordinateType findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound, Pieces::Identities::eIdentities identityThatIsToBeFound);
   boardCoordinateType findPiece(definedPieceType piece);
+  void updateCapturedPieces();
 };
 
 #endif // BOARD_H

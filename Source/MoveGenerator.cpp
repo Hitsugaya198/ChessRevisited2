@@ -94,7 +94,7 @@ void MoveGenerator::handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersT
             boardCoordinatesType::iterator setIterator = set.begin();
             while (setIterator != set.end()) {
               boardStateMapType tempState = currentStateOfTheGameBoard;
-              piecesSetType tempPieces =  _theGameBoard->workingCapturedPieces();
+              piecesListType tempPieces =  _theGameBoard->workingCapturedPieces();
               boardCoordinateType toWhere = *setIterator;
               Cell* from = _theGameBoard->getCell(currentPieceLocation);
               Cell* to = _theGameBoard->getCell(toWhere);
@@ -129,7 +129,7 @@ void MoveGenerator::handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersT
                 boardCoordinatesType::iterator possibleMovesIterator = possibleMoves.begin();
                 while (possibleMovesIterator != possibleMoves.end()) {
                   boardStateMapType tempState = currentStateOfTheGameBoard;
-                  piecesSetType tempPieces =  _theGameBoard->workingCapturedPieces();
+                  piecesListType tempPieces =  _theGameBoard->workingCapturedPieces();
                   boardCoordinateType toWhere = *possibleMovesIterator;
                   Cell* from = _theGameBoard->getCell(currentPieceLocation);
                   Cell* to = _theGameBoard->getCell(toWhere);
@@ -173,7 +173,7 @@ void MoveGenerator::handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersT
           boardCoordinatesType::iterator containerIterator = container.begin();
           while (containerIterator != container.end()) {
             boardStateMapType tempState = currentStateOfTheGameBoard;
-            piecesSetType tempPieces =  _theGameBoard->workingCapturedPieces();
+            piecesListType tempPieces =  _theGameBoard->workingCapturedPieces();
             boardCoordinateType toWhere = *containerIterator;
             Cell* from = _theGameBoard->getCell(currentPieceLocation);
             Cell* to = _theGameBoard->getCell(toWhere);

@@ -13,9 +13,9 @@ boardStateMapType Board::_workingBoardStateMap  = boardStateMapType();
 boardStateMapType Board::_backedUpBoardStateMap = boardStateMapType();
 boardStateMapType Board::_stagingBoardStateMap  = boardStateMapType();
 
-piecesSetType Board::_workingCapturedPieces  = piecesSetType();
-piecesSetType Board::_backedUpCapturedPieces = piecesSetType();
-piecesSetType Board::_stagingCapturedPieces  = piecesSetType();
+piecesListType Board::_workingCapturedPieces  = piecesListType();
+piecesListType Board::_backedUpCapturedPieces = piecesListType();
+piecesListType Board::_stagingCapturedPieces  = piecesListType();
 
 ///
 /// \brief Board::Board
@@ -44,7 +44,7 @@ Board::~Board()
 /// \param boardStateMap
 /// \param capturedPiecesContainer
 ///
-void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesSetType& capturedPiecesContainer)
+void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesListType& capturedPiecesContainer)
 {
   boardCoordinateType fromCoords = boardCoordinateType(from->row(), from->column());
   definedPieceType fromType = definedPieceType(from->assignedPiece()->identity(), from->assignedPiece()->color());
@@ -56,7 +56,7 @@ void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMa
   if (toType.first != Pieces::Identities::eNone) {
     // It's an attack
     // Destination piece is now considered to be captured
-    capturedPiecesContainer.insert(toType);
+    capturedPiecesContainer.append(toType);
     boardStateMap.remove(toCoords);
   }
 
@@ -205,7 +205,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
       boardCoordinatesType::iterator containerIterator = container.begin();
       while (containerIterator != container.end()) {
         boardStateMapType tempState = _workingBoardStateMap;
-        piecesSetType tempPieces = _workingCapturedPieces;
+        piecesListType tempPieces = _workingCapturedPieces;
         boardCoordinateType toWhere = *containerIterator;
         Cell* from = getCell(fromWhere);
         Cell* to = getCell(toWhere);
@@ -754,23 +754,22 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
 /// \param scenario
 /// \param scenarioPieces
 ///
-void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStateMapType& scenario, piecesSetType& scenarioPieces)
+void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStateMapType& scenario, piecesListType& scenarioPieces)
 {
   // back up previous state
   _backedUpBoardStateMap = boardStateMapType(scenario);
-  _backedUpCapturedPieces = piecesSetType(scenarioPieces);
+  _backedUpCapturedPieces = piecesListType(scenarioPieces);
 
   // ensure the future starts with the scenario
   _stagingBoardStateMap = boardStateMapType(scenario);
-  _stagingCapturedPieces = piecesSetType(scenarioPieces);
+  _stagingCapturedPieces = piecesListType(scenarioPieces);
 
   // Update the staging map
-//  updatePieceMap(getCell(from.first, from.second), getCell(to.first, to.second), _stagingBoardStateMap, _stagingCapturedPieces);
   _this->updatePieceMap(fromCell, toCell, _stagingBoardStateMap, _stagingCapturedPieces);
 
   // transfer the staged state into the scenario
   scenario = boardStateMapType(_stagingBoardStateMap);
-  scenarioPieces = piecesSetType(_stagingCapturedPieces);
+  scenarioPieces = piecesListType(_stagingCapturedPieces);
 }
 
 ///
@@ -785,7 +784,15 @@ void Board::movePieceCompleteMove(Board* _this, boardStateMapType& scenario)
   _this->uncheckAllCheckedCells();
 
   // Update the ui containers for captured pieces
+  _this->updateCapturedPieces();
+}
 
+///
+/// \brief Board::updateCapturedPieces
+///
+void Board::updateCapturedPieces()
+{
+  emit updateCapturedPiecesSignal();
 }
 
 ///
@@ -793,11 +800,11 @@ void Board::movePieceCompleteMove(Board* _this, boardStateMapType& scenario)
 /// \param scenario
 /// \param scenarioPieces
 ///
-void Board::movePieceRevertMove(boardStateMapType& scenario, piecesSetType& scenarioPieces)
+void Board::movePieceRevertMove(boardStateMapType& scenario, piecesListType& scenarioPieces)
 {
   // recover from backup
   scenario = boardStateMapType(_backedUpBoardStateMap);
-  scenarioPieces = piecesSetType(_backedUpCapturedPieces);
+  scenarioPieces = piecesListType(_backedUpCapturedPieces);
 }
 
 ///
@@ -1237,7 +1244,7 @@ void Board::setWorkingBoardStateMap(const boardStateMapType& workingBoardStateMa
 /// \brief Board::stagingCapturedPieces
 /// \return
 ///
-piecesSetType& Board::stagingCapturedPieces()
+piecesListType& Board::stagingCapturedPieces()
 {
   return _stagingCapturedPieces;
 }
@@ -1246,7 +1253,7 @@ piecesSetType& Board::stagingCapturedPieces()
 /// \brief Board::setStagingCapturedPieces
 /// \param stagingCapturedPieces
 ///
-void Board::setStagingCapturedPieces(const piecesSetType& stagingCapturedPieces)
+void Board::setStagingCapturedPieces(const piecesListType& stagingCapturedPieces)
 {
   _stagingCapturedPieces = stagingCapturedPieces;
 }
@@ -1255,7 +1262,7 @@ void Board::setStagingCapturedPieces(const piecesSetType& stagingCapturedPieces)
 /// \brief Board::backedUpCapturedPieces
 /// \return
 ///
-piecesSetType& Board::backedUpCapturedPieces()
+piecesListType& Board::backedUpCapturedPieces()
 {
   return _backedUpCapturedPieces;
 }
@@ -1264,7 +1271,7 @@ piecesSetType& Board::backedUpCapturedPieces()
 /// \brief Board::setBackedUpCapturedPieces
 /// \param backedUpCapturedPieces
 ///
-void Board::setBackedUpCapturedPieces(const piecesSetType& backedUpCapturedPieces)
+void Board::setBackedUpCapturedPieces(const piecesListType& backedUpCapturedPieces)
 {
   _backedUpCapturedPieces = backedUpCapturedPieces;
 }
@@ -1273,7 +1280,7 @@ void Board::setBackedUpCapturedPieces(const piecesSetType& backedUpCapturedPiece
 /// \brief Board::workingCapturedPieces
 /// \return
 ///
-piecesSetType& Board::workingCapturedPieces()
+piecesListType& Board::workingCapturedPieces()
 {
   return _workingCapturedPieces;
 }
@@ -1282,7 +1289,7 @@ piecesSetType& Board::workingCapturedPieces()
 /// \brief Board::setWorkingCapturedPieces
 /// \param workingCapturedPieces
 ///
-void Board::setWorkingCapturedPieces(const piecesSetType& workingCapturedPieces)
+void Board::setWorkingCapturedPieces(const piecesListType& workingCapturedPieces)
 {
   _workingCapturedPieces = workingCapturedPieces;
 }

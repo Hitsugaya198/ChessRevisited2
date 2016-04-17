@@ -12,3 +12,8 @@ CapturedPieceWidget::~CapturedPieceWidget()
 {
   delete ui;
 }
+
+void CapturedPieceWidget::setPixmap(const QPixmap& pixmap)
+{
+  ui->_pixmap->setPixmap(pixmap);
+}

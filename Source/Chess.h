@@ -3,6 +3,7 @@
 
 #include "Player.h"
 #include "MoveGenerator.h"
+#include "CapturedPieceWidget.h"
 
 #include <QMainWindow>
 
@@ -26,7 +27,7 @@ private slots:
   void startNewGame();
   void endGame(bool checkMate);
 
-
+  void updateCapturedPieces();
 
 private:
   Ui::Chess* ui;
@@ -34,7 +35,9 @@ private:
   QSharedPointer<Player> _player1;
   QSharedPointer<Player> _player2;
   QScopedPointer<MoveGenerator> _artificialIntelligence;
-
+  QList<CapturedPieceWidget> _blackPieces;
+  QList<CapturedPieceWidget> _whitePieces;
+  void clearLayout(QLayout* layout);
 };
 
 #endif // CHESS_H

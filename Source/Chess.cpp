@@ -34,6 +34,8 @@ Chess::Chess(QWidget* parent) :
           _artificialIntelligence.data(), SLOT(handleTurnChange(QSharedPointer<Player>&)));
   connect(ui->_theGameBoard, SIGNAL(aiMoveCompletionRequired()),
           _artificialIntelligence.data(), SLOT(handleMoveCompletionRequired()));
+  connect(ui->_theGameBoard, SIGNAL(updateCapturedPiecesSignal()),
+          this, SLOT(updateCapturedPieces()));
 
   on_action_New_Game_triggered();
 }
@@ -89,4 +91,93 @@ void Chess::endGame(bool checkMate)
   else {
     QMessageBox::information(0, QString("Game Over"), QString("The game has gone stale."), QMessageBox::Ok);
   }
+}
+
+///
+/// \brief Chess::updateCapturedPieces
+///
+void Chess::updateCapturedPieces()
+{
+  QWidget* whitePiecesContainer = ui->_whitePiecesScroller;
+  QWidget* blackPiecesContainer = ui->_blackPiecesScroller;
+
+  QLayout* whiteLayout = whitePiecesContainer->layout();
+  QLayout* blackLayout = blackPiecesContainer->layout();
+
+  QVBoxLayout* castedWhiteLayout = dynamic_cast<QVBoxLayout*>(whiteLayout);
+  QVBoxLayout* castedBlackLayout = dynamic_cast<QVBoxLayout*>(blackLayout);
+
+  QVBoxLayout* newWhiteLayout;
+  QVBoxLayout* newBlackLayout;
+
+  if(castedBlackLayout == 0)
+  {
+    newBlackLayout = new QVBoxLayout();
+    delete blackLayout;
+  }
+  else
+  {
+    newBlackLayout = castedBlackLayout;
+  }
+
+  if(castedWhiteLayout == 0)
+  {
+    newWhiteLayout = new QVBoxLayout();
+    delete whiteLayout;
+  }
+  else
+  {
+    newWhiteLayout = castedWhiteLayout;
+  }
+
+  clearLayout(newBlackLayout);
+  clearLayout(newWhiteLayout);
+
+  piecesListType capturedPieces = ui->_theGameBoard->workingCapturedPieces();
+  piecesListType::iterator i = capturedPieces.begin();
+
+  while(i != capturedPieces.end())
+  {
+    definedPieceType x = *i;
+    ++i;
+
+    CapturedPieceWidget* capturedPiece = new CapturedPieceWidget();
+    QPixmap pm;
+    QString colorString = Pieces::getInstance().colorNames().at(x.second);
+    QString identityString = Pieces::getInstance().identityNames().at(x.first);
+    QString resPath = QString(":/Pieces/") + QString("Resources/") + colorString + QString("/") + identityString + QString(".png");
+    pm.load(resPath, "PNG");
+    capturedPiece->setPixmap(pm);
+
+    switch(x.second)
+    {
+      case Pieces::PieceColors::eBlack:
+      {
+        newBlackLayout->addWidget(capturedPiece);
+        break;
+      }
+      case Pieces::PieceColors::eWhite:
+      {
+        newWhiteLayout->addWidget(capturedPiece);
+        break;
+      }
+    }
+  }
+  whitePiecesContainer->setLayout(newWhiteLayout);
+  blackPiecesContainer->setLayout(newBlackLayout);
+}
+
+///
+/// \brief Chess::clearLayout
+/// \param layout
+///
+void Chess::clearLayout(QLayout *layout)
+{
+    if (layout) {
+        while(layout->count() > 0){
+            QLayoutItem *item = layout->takeAt(0);
+            delete item->widget();
+            delete item;
+        }
+    }
 }
