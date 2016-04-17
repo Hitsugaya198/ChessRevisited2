@@ -20,6 +20,7 @@ public:
   void associateGameBoard(Board* associatedGameBoard);
 
 signals:
+  void endGame(bool checkMate);
 
 public slots:
   void handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersTurn);
@@ -31,8 +32,12 @@ private:
   boardCoordinateType _locationStart;
   boardCoordinateType _locationEnd;
   boardCoordinatesType _containerForMoving;
+  static int _moveStrategy;
+  static bool _moveFromFrontOfContainer;
 
-  void moveTheFirstPieceThatCanMove();
+  void moveTheFirstPieceThatCanMove(bool priorityForAttack = false);
+  void moveWithPriorityForAttack();
+  void moveAnyPawnThatCanMove();
 };
 
 #endif // MOVEGENERATOR_H

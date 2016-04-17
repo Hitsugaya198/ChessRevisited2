@@ -36,6 +36,8 @@ Chess::Chess(QWidget* parent) :
           _artificialIntelligence.data(), SLOT(handleMoveCompletionRequired()));
   connect(ui->_theGameBoard, SIGNAL(updateCapturedPiecesSignal()),
           this, SLOT(updateCapturedPieces()));
+  connect(_artificialIntelligence.data(), SIGNAL(endGame(bool)),
+          this, SLOT(endGame(bool)));
 
   _blackScrollArea = new QScrollArea(ui->_blackPiecesArea);
   _whiteScrollArea = new QScrollArea(ui->_whitePiecesArea);
@@ -136,13 +138,12 @@ void Chess::updateCapturedPieces()
     definedPieceType x = *i;
     ++i;
 
-    CapturedPieceWidget* capturedPiece = new CapturedPieceWidget();
     QPixmap pm;
     QString colorString = Pieces::getInstance().colorNames().at(x.second);
     QString identityString = Pieces::getInstance().identityNames().at(x.first);
     QString resPath = QString(":/Pieces/") + QString("Resources/") + colorString + QString("/") + identityString + QString(".png");
     pm.load(resPath, "PNG");
-    capturedPiece->setPixmap(pm);
+    CapturedPieceWidget* capturedPiece = new CapturedPieceWidget(pm);
 
     switch(x.second)
     {

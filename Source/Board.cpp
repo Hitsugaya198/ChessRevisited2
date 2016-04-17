@@ -90,6 +90,11 @@ void Board::clearHighLights()
 ///
 void Board::moveInitiated(boardCoordinateType fromWhere)
 {
+  boardCoordinateType locationOfAttacker;
+  boardCoordinateType locationOfVictim;
+  definedPieceType    pieceWhoWillBeAttacking;
+  definedPieceType    pieceWhoWillBeAttacked;
+
   // validate that there is actually a piece there on the board.
   if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eNone ||
       getCell(fromWhere)->assignedPiece()->color() == Pieces::PieceColors::eNone) {
@@ -134,16 +139,60 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
     boardCoordinatesType container = boardCoordinatesType();
 
     // Map it's possible moves.  mapMoves() only returns "legal" moves
-    mapMoves(rules, currentPiece, container, fromWhere);
+    mapMoves(rules, currentPiece, container, fromWhere, _workingBoardStateMap);
 
-    if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eKnight) {
+    if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eKing) {
+      if (!container.isEmpty()) {
+        boardCoordinatesType set;
+        bool canItBeAttacked = isTheTargetWithinRange(_pieceWhoWillBeAttacking.second,
+                                                      _pieceWhoWillBeAttacking.first,
+                                                      set,
+                                                      _workingBoardStateMap,
+                                                      locationOfAttacker,
+                                                      locationOfVictim,
+                                                      pieceWhoWillBeAttacking,
+                                                      pieceWhoWillBeAttacked);
+        if (canItBeAttacked) {
+          // Attack the bugger
+          _locationStart = locationOfAttacker;
+          containerForHighlighting = set;
+        }
+        else {
+          // Run away
+          boardCoordinatesType set = getPath(_locationOfVictim, _locationOfAttacker, _workingBoardStateMap);
+          bool pathCanBePotentiallyAvoided = !set.isEmpty();
+          if (pathCanBePotentiallyAvoided) {
+            boardCoordinatesType possibleMoves = container.subtract(set);
+            if (!possibleMoves.isEmpty()) {
+              // record the starting-cell, highlight the outcomes
+              _locationStart = fromWhere;
+              containerForHighlighting = possibleMoves;
+            }
+            else {
+              // Selected piece has no available moves.
+            }
+          }
+        }
+      }
+    }
+    else if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eKnight) {
       // Knight's path is L-shaped, not straight horizontal/vertical/diagonal like the other pieces
       // It is a piece, it is the right color.  Map it's move-rules
 
       if (!container.isEmpty()) {
-        bool canItBeAttacked = container.contains(_locationOfAttacker);
+        boardCoordinatesType set;
+        bool canItBeAttacked = isTheTargetWithinRange(_pieceWhoWillBeAttacking.second,
+                                                      _pieceWhoWillBeAttacking.first,
+                                                      set,
+                                                      _workingBoardStateMap,
+                                                      locationOfAttacker,
+                                                      locationOfVictim,
+                                                      pieceWhoWillBeAttacking,
+                                                      pieceWhoWillBeAttacked);
         if (canItBeAttacked) {
           // Attack the bugger
+          _locationStart = locationOfAttacker;
+          containerForHighlighting = set;
         }
         else {
           // try to block his path
@@ -169,7 +218,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
       bool canItBeAttacked = !set.isEmpty();
       // If we can attack it directly, there will be a path to it.
       if (canItBeAttacked) {
-        // Highlight the way
+        // Attack the bugger
         _locationStart = fromWhere;
         containerForHighlighting = set;
       }
@@ -197,7 +246,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
     boardCoordinatesType container = boardCoordinatesType();
 
     // Map it's possible moves.  mapMoves() only returns "legal" moves
-    mapMoves(rules, currentPiece, container, fromWhere);
+    mapMoves(rules, currentPiece, container, fromWhere, _workingBoardStateMap);
 
 
     if (!container.isEmpty()) {
@@ -257,11 +306,21 @@ void Board::continueInitiatedMove(boardCoordinateType whereTo)
     movePieceStart(this, whereFrom, whereTo);
     movePieceCompleteMove(this);
 
+
     if (TurnManager::getInstance().currentPlayer()->identity() == UserIdentity::eHuman) {
       TurnManager::switchPlayers(_player2);
     }
     else {
       TurnManager::switchPlayers(_player1);
+    }
+
+    if(TurnManager::getInstance().currentPlayer()->identity() == UserIdentity::eHuman)
+    {
+      bool boardIsValid = evaluateBoardState(_workingBoardStateMap);
+      if(!boardIsValid)
+      {
+        QMessageBox::information(0, QString("Check!"), QString("Your King is Checked!"), QMessageBox::Ok);
+      }
     }
 
   }
@@ -551,14 +610,22 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
   int rowMin = rowA < rowB ? rowA : rowB;
   int columnMin = columnA < columnB ? columnA : columnB;
 
+  int stepFactorRows = (rowA < rowB) ? 1 : -1;
+  int stepFactorColumns = (columnA < columnB) ? 1 : -1;
+  int newColumn = columnA;
+
   // Make a few practical decisions.
   if (rowMin == rowMax) { // The piece moves horizontally as the row value doesn't change
+    if(getCell(pointA)->assignedPiece()->identity() == Pieces::Identities::ePawn)
+    {
+      return returnSet;
+    }
     // Only need to iterate through the x-axis
-    for (int i = columnMin + 1; i <= columnMax; ++i) {
+    for (int i = columnA + stepFactorColumns; i != columnB + stepFactorColumns; i += stepFactorColumns) {
       boardCoordinateType temp = boardCoordinateType(rowMax, i);
       if (boardStateToSearch.value(temp).first != Pieces::Identities::eNone) {
         // There is a piece between you and your destination.
-        if (i != columnMax) { // If it is not the destination block, somebody is in your way.
+        if (i != columnB) { // If it is not the destination block, somebody is in your way.
           returnSet = boardCoordinatesType();
           return returnSet;
         }
@@ -579,12 +646,16 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
   }
 
   if (columnMin == columnMax) { // The piece moves horizontally as the y-axis value doesn't change
+    if(getCell(pointA)->assignedPiece()->identity() == Pieces::Identities::eBishop)
+    {
+      return returnSet;
+    }
     // Only need to iterate through the x-axis
-    for (int j = rowMin + 1; j <= rowMax; ++j) {
+    for (int j = rowA + stepFactorRows; j != rowB + stepFactorRows; j += stepFactorRows) {
       boardCoordinateType temp = boardCoordinateType(j, columnMax);
       if (boardStateToSearch.value(temp).first != Pieces::Identities::eNone) {
         // There is a piece between you and your destination.
-        if (j != rowMax) { // If it is not the destination block, somebody is in your way.
+        if (j != rowB) { // If it is not the destination block, somebody is in your way.
           returnSet = boardCoordinatesType();
           return returnSet;
         }
@@ -611,24 +682,21 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
     return returnSet;
   }
 
-  int stepFactorRows = (rowA < rowB) ? 1 : -1;
-  int stepFactorColumns = (columnA < columnB) ? 1 : -1;
-  int newColumn = columnA;
-
-  // Special case
+  // Special case - target is an adjacent cell
   if (rowA + stepFactorRows == rowB) {
     if (newColumn + stepFactorColumns == columnB) {
       boardCoordinateType validCoordinate = boardCoordinateType(rowB, columnB);
       returnSet.insert(validCoordinate);
+      return returnSet;
     }
   }
 
-  for (int row = rowA + stepFactorRows; row != rowB; row += stepFactorRows) {
-    for (int col = newColumn + stepFactorColumns; col != columnB; col += stepFactorColumns) {
+  for (int row = rowA + stepFactorRows; row != rowB + stepFactorRows; row += stepFactorRows) {
+    for (int col = newColumn + stepFactorColumns; col != columnB + stepFactorColumns; col += stepFactorColumns) {
       boardCoordinateType temp = boardCoordinateType(row, col);
       if (boardStateToSearch.value(temp).first != Pieces::Identities::eNone) {
         // There is a piece between you and your destination.
-        if (col != columnB - stepFactorColumns && row != rowB - stepFactorRows) { // If it is not the destination block, somebody is in your way.
+        if (col != columnB && row != rowB) { // If it is not the destination block, somebody is in your way.
           returnSet = boardCoordinatesType();
           return returnSet;
         }
@@ -664,9 +732,20 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
     color = Pieces::PieceColors::eBlack;
   }
 
-  bool kingIsChecked = isTheTargetWithinRange(color, Pieces::Identities::eKing, container, boardStateToEvaluate);
+  boardCoordinateType locationOfAttacker;
+  boardCoordinateType locationOfVictim;
+  definedPieceType    pieceWhoWillBeAttacking;
+  definedPieceType    pieceWhoWillBeAttacked;
+
+  bool kingIsChecked = isTheTargetWithinRange(color, Pieces::Identities::eKing, container, boardStateToEvaluate,
+                                              locationOfAttacker, locationOfVictim, pieceWhoWillBeAttacking, pieceWhoWillBeAttacked);
+
 
   if (kingIsChecked) {
+    _locationOfAttacker      = locationOfAttacker;
+    _locationOfVictim        = locationOfVictim;
+    _pieceWhoWillBeAttacking = pieceWhoWillBeAttacking;
+    _pieceWhoWillBeAttacked  = pieceWhoWillBeAttacked;
     return false;
   }
 
@@ -684,7 +763,11 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
                                    Pieces::Identities::eIdentities identityThatIsToBeAttacked,
                                    boardCoordinatesType& container,
-                                   boardStateMapType& boardStateToUse)
+                                   boardStateMapType& boardStateToUse,
+                                   boardCoordinateType& locationOfAttacker,
+                                   boardCoordinateType& locationOfVictim,
+                                   definedPieceType& pieceWhoWillBeAttacking,
+                                   definedPieceType& pieceWhoWillBeAttacked)
 {
   Pieces::PieceColors::ePieceColors attackerColor = Pieces::flipColor(colorThatIsToBeAttacked);
   boardCoordinatesType targetsLocation;
@@ -728,15 +811,17 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
         // It is a piece, it is the right color.  Map it's moves
         MoveRules::movementType rules = MoveRules::getMovementRules(currentPieceIdentity, currentPieceColor);
 
-        mapMoves(rules, currentPiece, container, currentCoordinate);
+        mapMoves(rules, currentPiece, container, currentCoordinate, boardStateToUse);
         definedPieceType pieceToAttack = definedPieceType(identityThatIsToBeAttacked,
                                                           colorThatIsToBeAttacked); //_currentBoardStateMap.value(currentCoordinate);
 
         if (container.contains(targetLocation)) {
-          _locationOfAttacker      = currentCoordinate;
-          _locationOfVictim        = targetLocation;
-          _pieceWhoWillBeAttacking = currentPiece;
-          _pieceWhoWillBeAttacked  = pieceToAttack;
+          container.clear();
+          locationOfAttacker      = currentCoordinate;
+          locationOfVictim        = targetLocation;
+          pieceWhoWillBeAttacking = currentPiece;
+          pieceWhoWillBeAttacked  = pieceToAttack;
+          container.insert(locationOfVictim);
           return true;
         }
       }
@@ -814,7 +899,7 @@ void Board::movePieceRevertMove(boardStateMapType& scenario, piecesListType& sce
 /// \param container
 /// \param location
 ///
-void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location)
+void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& stateMapToUse)
 {
   bool lessLinearMoveRequired = false;
 
@@ -870,94 +955,94 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
       ++i;
 
       switch (temp) {
-      case MoveRules::Direction::eMayMoveNorth      : {
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startRow - x >= 1) {
-            boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveNorth      : {
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startRow - x >= 1) {
+              boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
+          break;
         }
+        case MoveRules::Direction::eMayMoveNorthEast  :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startRow - x >= 1 && startColumn + x <= 8) {
+              boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn + x);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
+          }
         break;
-      }
-      case MoveRules::Direction::eMayMoveNorthEast  :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startRow - x >= 1 && startColumn + x <= 8) {
-            boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn + x);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveEast       :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startColumn + x <= 8) {
+              boardCoordinateType coord = boardCoordinateType(startRow, startColumn + x);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
-        }
         break;
-      case MoveRules::Direction::eMayMoveEast       :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startColumn + x <= 8) {
-            boardCoordinateType coord = boardCoordinateType(startRow, startColumn + x);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveSouthEast  :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startRow + x <= 8 && startColumn + x <= 8) {
+              boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn + x);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
-        }
         break;
-      case MoveRules::Direction::eMayMoveSouthEast  :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startRow + x <= 8 && startColumn + x <= 8) {
-            boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn + x);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveSouth      :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startRow + x <= 8) {
+              boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
-        }
         break;
-      case MoveRules::Direction::eMayMoveSouth      :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startRow + x <= 8) {
-            boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveSouthWest  :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startRow + x <= 8 && startColumn - x >= 1) {
+              boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn - x);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
-        }
         break;
-      case MoveRules::Direction::eMayMoveSouthWest  :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startRow + x <= 8 && startColumn - x >= 1) {
-            boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn - x);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveWest       :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startColumn - x >= 1) {
+              boardCoordinateType coord = boardCoordinateType(startRow, startColumn - x);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
-        }
         break;
-      case MoveRules::Direction::eMayMoveWest       :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startColumn - x >= 1) {
-            boardCoordinateType coord = boardCoordinateType(startRow, startColumn - x);
-            container.insert(coord);
+        case MoveRules::Direction::eMayMoveNorthWest  :
+          for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
+            if (startRow - x >= 1 && startColumn - x >= 1) {
+              boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn - x);
+              container.insert(coord);
+            }
+            else {
+              break;
+            }
           }
-          else {
-            break;
-          }
-        }
-        break;
-      case MoveRules::Direction::eMayMoveNorthWest  :
-        for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
-          if (startRow - x >= 1 && startColumn - x >= 1) {
-            boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn - x);
-            container.insert(coord);
-          }
-          else {
-            break;
-          }
-        }
         break;
       }
     }
@@ -972,53 +1057,53 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
       ++i;
 
       switch (temp) {
-      case MoveRules::Direction::eMayMoveNorthEast  :
-        // Knight can move 2 East and 1 North
-        if (startRow - 1 >= 1 && startColumn + 2 <= 8) {
-          boardCoordinateType coord = boardCoordinateType(startRow - 1, startColumn + 2);
-          container.insert(coord);
-        }
-        // Knight can move 1 East and 2 North
-        if (startRow - 2 >= 1 && startColumn + 1 <= 8) {
-          boardCoordinateType coord = boardCoordinateType(startRow - 2, startColumn + 1);
-          container.insert(coord);
-        }
+        case MoveRules::Direction::eMayMoveNorthEast  :
+          // Knight can move 2 East and 1 North
+          if (startRow - 1 >= 1 && startColumn + 2 <= 8) {
+            boardCoordinateType coord = boardCoordinateType(startRow - 1, startColumn + 2);
+            container.insert(coord);
+          }
+          // Knight can move 1 East and 2 North
+          if (startRow - 2 >= 1 && startColumn + 1 <= 8) {
+            boardCoordinateType coord = boardCoordinateType(startRow - 2, startColumn + 1);
+            container.insert(coord);
+          }
         break;
-      case MoveRules::Direction::eMayMoveSouthEast  :
-        // Knight can move 2 East and 1 South
-        if (startRow + 1 <= 8 && startColumn + 2 <= 8) {
-          boardCoordinateType coord = boardCoordinateType(startRow + 1, startColumn + 2);
-          container.insert(coord);
-        }
-        // Knight can move 1 East and 2 South
-        if (startRow + 2 <= 8 && startColumn + 1 <= 8) {
-          boardCoordinateType coord = boardCoordinateType(startRow + 2, startColumn + 1);
-          container.insert(coord);
-        }
+        case MoveRules::Direction::eMayMoveSouthEast  :
+          // Knight can move 2 East and 1 South
+          if (startRow + 1 <= 8 && startColumn + 2 <= 8) {
+            boardCoordinateType coord = boardCoordinateType(startRow + 1, startColumn + 2);
+            container.insert(coord);
+          }
+          // Knight can move 1 East and 2 South
+          if (startRow + 2 <= 8 && startColumn + 1 <= 8) {
+            boardCoordinateType coord = boardCoordinateType(startRow + 2, startColumn + 1);
+            container.insert(coord);
+          }
         break;
-      case MoveRules::Direction::eMayMoveSouthWest  :
-        // Knight can move 2 West and 1 South
-        if (startRow + 1 <= 8 && startColumn - 2 >= 1) {
-          boardCoordinateType coord = boardCoordinateType(startRow + 1, startColumn - 2);
-          container.insert(coord);
-        }
-        // Knight can move 1 West and 2 South
-        if (startRow + 2 <= 8 && startColumn - 1 >= 1) {
-          boardCoordinateType coord = boardCoordinateType(startRow + 2, startColumn - 1);
-          container.insert(coord);
-        }
+        case MoveRules::Direction::eMayMoveSouthWest  :
+          // Knight can move 2 West and 1 South
+          if (startRow + 1 <= 8 && startColumn - 2 >= 1) {
+            boardCoordinateType coord = boardCoordinateType(startRow + 1, startColumn - 2);
+            container.insert(coord);
+          }
+          // Knight can move 1 West and 2 South
+          if (startRow + 2 <= 8 && startColumn - 1 >= 1) {
+            boardCoordinateType coord = boardCoordinateType(startRow + 2, startColumn - 1);
+            container.insert(coord);
+          }
         break;
-      case MoveRules::Direction::eMayMoveNorthWest  :
-        // Knight can move 2 West and 1 North
-        if (startRow - 1 >= 1 && startColumn - 2 >= 1) {
-          boardCoordinateType coord = boardCoordinateType(startRow - 1, startColumn - 2);
-          container.insert(coord);
-        }
-        // Knight can move 1 West and 2 North
-        if (startRow - 2 >= 1 && startColumn - 1 >= 1) {
-          boardCoordinateType coord = boardCoordinateType(startRow - 2, startColumn - 1);
-          container.insert(coord);
-        }
+        case MoveRules::Direction::eMayMoveNorthWest  :
+          // Knight can move 2 West and 1 North
+          if (startRow - 1 >= 1 && startColumn - 2 >= 1) {
+            boardCoordinateType coord = boardCoordinateType(startRow - 1, startColumn - 2);
+            container.insert(coord);
+          }
+          // Knight can move 1 West and 2 North
+          if (startRow - 2 >= 1 && startColumn - 1 >= 1) {
+            boardCoordinateType coord = boardCoordinateType(startRow - 2, startColumn - 1);
+            container.insert(coord);
+          }
         break;
       }
     }
@@ -1032,7 +1117,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
       boardCoordinateType coordinate = *i;
       ++i;
 
-      if (!isMoveLegal(location, coordinate, container)) {
+      if (!isMoveLegal(location, coordinate, container, stateMapToUse)) {
         container.remove(coordinate);
         i = container.begin();
       }
@@ -1047,10 +1132,10 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
 /// \param containerToUse
 /// \return
 ///
-bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse)
+bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse, boardStateMapType& stateMapToUse)
 {
-  Pieces::PieceColors::ePieceColors fromColor = _workingBoardStateMap.value(moveFrom).second;
-  Pieces::PieceColors::ePieceColors toColor = _workingBoardStateMap.value(moveTo).second;
+  Pieces::PieceColors::ePieceColors fromColor = stateMapToUse.value(moveFrom).second;
+  Pieces::PieceColors::ePieceColors toColor = stateMapToUse.value(moveTo).second;
 
   if (containerToUse.isEmpty()) {
     return false; // No possible moves for selected piece.
@@ -1063,24 +1148,38 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
     // Now we have determined the selected piece can travel to the chosen spot (cell) through
     // it's legal ranges of movement, but, we don't yet know if it can get there (obstructions?)
 
-    int x1 = moveFrom.second;
-    int y1 = moveFrom.first;
+    int column1 = moveFrom.second;
+    int row1 = moveFrom.first;
 
-    int x2 = moveTo.second;
-    int y2 = moveTo.first;
+    int column2 = moveTo.second;
+    int row2 = moveTo.first;
 
-    int xMax = x1 > x2 ? x1 : x2;
-    int yMax = y1 > y2 ? y1 : y2;
-    int xMin = x1 < x2 ? x1 : x2;
-    int yMin = y1 < y2 ? y1 : y2;
+    int columnMax = column1 > column2 ? column1 : column2;
+    int rowMax = row1 > row2 ? row1 : row2;
+    int columnMin = column1 < column2 ? column1 : column2;
+    int rowMin = row1 < row2 ? row1 : row2;
+
+    int stepFactorX = (column1 < column2) ? 1 : -1;
+    int stepFactorY = (row1 < row2) ? 1 : -1;
 
     // If the piece in question is a Pawn, and the FROM and TO columns are not the same, there has to be an
     // enemy piece on the destination cell.  Do a quick check and disqualify if needed.
-    if (_workingBoardStateMap.value(moveFrom).first == Pieces::Identities::ePawn) {
-      if (x1 != x2) {
+    if (stateMapToUse.value(moveFrom).first == Pieces::Identities::ePawn) {
+      if (column1 != column2) {
 
         // Tried to move horizontally by more than one cell.  Will not be allowed
-        if (xMax - xMin > 1) {
+        if (columnMax - columnMin > 1) {
+          return false;
+        }
+
+        // Check that the move is 'forward'
+        if(fromColor == Pieces::PieceColors::eBlack && row1 > row2)
+        {
+          return false;
+        }
+
+        if(fromColor == Pieces::PieceColors::eWhite && row1 < row2)
+        {
           return false;
         }
 
@@ -1094,11 +1193,31 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
         else {
           return true;
         }
-
       }
       else {  // Straight move, can only attack sideways, so if destination cell contains
         // an enemy piece, thwart it
         if (toColor != Pieces::PieceColors::eNone) {
+          return false;
+        }
+
+        // In the event a pawn tries to move 2 spaces forward, but the cell between
+        // the pawn and its destination is occupied, it cannot be allowed
+        if(rowMax - rowMin > 1)
+        {
+          if (getCell(rowMax - 1, columnMax)->assignedPiece()->identity() != Pieces::Identities::eNone)
+          {
+            return false;
+          }
+        }
+
+        // Check that the move is 'forward'
+        if(fromColor == Pieces::PieceColors::eBlack && row1 > row2)
+        {
+          return false;
+        }
+
+        if(fromColor == Pieces::PieceColors::eWhite && row1 < row2)
+        {
           return false;
         }
 
@@ -1110,16 +1229,16 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
     }
 
     // Knights can "jump over" other pieces, so not going to check if anybody is in his way.
-    if (_workingBoardStateMap.value(moveFrom).first != Pieces::Identities::eKnight) {
+    if (stateMapToUse.value(moveFrom).first != Pieces::Identities::eKnight) {
 
       // Make a few practical decisions.
-      if (xMin == xMax) { // The piece moves vertically as the x-axis value doesn't change
+      if (columnMin == columnMax) { // The piece moves vertically as the x-axis value doesn't change
         // Only need to iterate through the y-axis
-        for (int i = yMin + 1; i <= yMax; ++i) {
-          boardCoordinateType temp = boardCoordinateType(i, xMax);
-          if (_workingBoardStateMap.value(temp).first != Pieces::Identities::eNone) {
+        for (int i = rowMin + 1; i <= rowMax; ++i) {
+          boardCoordinateType temp = boardCoordinateType(i, columnMax);
+          if (stateMapToUse.value(temp).first != Pieces::Identities::eNone) {
             // There is a piece between you and your destination.
-            if (i != yMax) { // If it is not the destination block, somebody is in your way.
+            if (i != rowMax) { // If it is not the destination block, somebody is in your way.
               return false;
             }
             // Already checked the source and destination piece colors
@@ -1130,13 +1249,13 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
         return true;
       }
 
-      if (yMin == yMax) { // The piece moves horizontally as the y-axis value doesn't change
+      if (rowMin == rowMax) { // The piece moves horizontally as the y-axis value doesn't change
         // Only need to iterate through the x-axis
-        for (int j = xMin + 1; j <= xMax; ++j) {
-          boardCoordinateType temp = boardCoordinateType(yMax, j);
-          if (_workingBoardStateMap.value(temp).first != Pieces::Identities::eNone) {
+        for (int j = columnMin + 1; j <= columnMax; ++j) {
+          boardCoordinateType temp = boardCoordinateType(rowMax, j);
+          if (stateMapToUse.value(temp).first != Pieces::Identities::eNone) {
             // There is a piece between you and your destination.
-            if (j != xMax) { // If it is not the destination block, somebody is in your way.
+            if (j != columnMax) { // If it is not the destination block, somebody is in your way.
               return false;
             }
             // Already checked the source and destination piece colors
@@ -1149,22 +1268,20 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
 
       // If we reach this line, it means the move is diagonal.  Apart from the Knight piece
       // the difference between xMin/xMax and yMin/yMax should be the same, so check that
-      if ((xMax - xMin) != (yMax - yMin)) { // The poo has hitteth the proverbial fan
+      if ((columnMax - columnMin) != (rowMax - rowMin)) { // The poo has hitteth the proverbial fan
         return false;
       }
 
       // Finally, once we reach this line, the check should be easy
       // Few simple checks
-      int stepFactorX = (x1 < x2) ? 1 : -1;
-      int stepFactorY = (y1 < y2) ? 1 : -1;
-      int newY = y1;
+      int newY = row1;
 
-      for (int col = x1 + stepFactorX; col != x2 + stepFactorX; col += stepFactorX) {
-        for (int row = newY + stepFactorY; row != y2 + stepFactorY; row += stepFactorY) {
+      for (int col = column1 + stepFactorX; col != column2 + stepFactorX; col += stepFactorX) {
+        for (int row = newY + stepFactorY; row != row2 + stepFactorY; row += stepFactorY) {
           boardCoordinateType temp = boardCoordinateType(row, col);
-          if (_workingBoardStateMap.value(temp).first != Pieces::Identities::eNone) {
+          if (stateMapToUse.value(temp).first != Pieces::Identities::eNone) {
             // There is a piece between you and your destination.
-            if (col != x2 && row != y2) { // If it is not the destination block, somebody is in your way.
+            if (col != column2 && row != row2) { // If it is not the destination block, somebody is in your way.
               return false;
             }
             // Already checked the source and destination piece colors
@@ -1334,18 +1451,19 @@ void Board::redrawBoardFromMap(boardStateMapType currentBoardStateMap)
   for (int row = eMinRow; row <= eMaxRow; ++row) {
     for (int column = eMinColumn; column <= eMaxColumn; ++column) {
       getCell(row, column)->clearAssignedPiece();
-//      getCell(row, column)->highLightCell(false);
+      //      getCell(row, column)->highLightCell(false);
     }
   }
 
-  boardStateMapType::iterator i = currentBoardStateMap.begin();
+  boardStateMapIteratorType i(currentBoardStateMap);
 
-  while (i != currentBoardStateMap.end()) {
+  while (i.hasNext()) {
+
+    i.next();
 
     boardCoordinateType coordinate = i.key();
     definedPieceType piece = i.value();
 
-    ++i;
     Cell* cell = getCell(coordinate.first, coordinate.second);
 
     QSharedPointer<Piece> pieceInstance = QSharedPointer<Piece>(new Piece(piece.first, piece.second));
@@ -1473,23 +1591,23 @@ void Board::createStartupMap(boardStateMapType& mapToInitialize)
             pieceColor = Pieces::PieceColors::eWhite;
           }
           switch (column) {
-          case eCastleLeftColumn:
-          case eCastleRightColumn:
-            mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eCastle, pieceColor));
+            case eCastleLeftColumn:
+            case eCastleRightColumn:
+              mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eCastle, pieceColor));
             break;
-          case eKnightLeftColumn :
-          case eKnightRightColumn:
-            mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eKnight, pieceColor));
+            case eKnightLeftColumn :
+            case eKnightRightColumn:
+              mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eKnight, pieceColor));
             break;
-          case eBishopLeftColumn :
-          case eBishopRightColumn:
-            mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eBishop, pieceColor));
+            case eBishopLeftColumn :
+            case eBishopRightColumn:
+              mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eBishop, pieceColor));
             break;
-          case eKingColumn:
-            mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eKing,   pieceColor));
+            case eKingColumn:
+              mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eKing,   pieceColor));
             break;
-          case eQueenColumn:
-            mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eQueen,  pieceColor));
+            case eQueenColumn:
+              mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::eQueen,  pieceColor));
             break;
           }
         }

@@ -8,8 +8,8 @@ PixmapWidget::PixmapWidget(QWidget *parent) :
   QWidget(parent),
   pixmap_( /*QPixmap( ":/general/General/no_image.png", "PNG" )*/ )
 {
-  updateScaledPixmap();
-  setMinimumWidth( 40 );
+//  updateScaledPixmap();
+//  setMinimumWidth( 40 );
 }
 
 PixmapWidget::~PixmapWidget()

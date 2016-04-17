@@ -12,7 +12,7 @@ class CapturedPieceWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit CapturedPieceWidget(QWidget *parent = 0);
+    explicit CapturedPieceWidget(const QPixmap& pixmap, QWidget *parent = 0);
     ~CapturedPieceWidget();
   void setPixmap (const QPixmap& pixmap);
 

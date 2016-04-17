@@ -1,11 +1,12 @@
 #include "CapturedPieceWidget.h"
 #include "ui_CapturedPieceWidget.h"
 
-CapturedPieceWidget::CapturedPieceWidget(QWidget *parent) :
+CapturedPieceWidget::CapturedPieceWidget(const QPixmap& pixmap, QWidget *parent) :
   QWidget(parent),
   ui(new Ui::CapturedPieceWidget)
 {
   ui->setupUi(this);
+  setPixmap(pixmap);
 }
 
 CapturedPieceWidget::~CapturedPieceWidget()

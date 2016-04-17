@@ -27,6 +27,7 @@ namespace    //anonymous
   typedef QSet < boardCoordinateType > boardCoordinatesType;
   typedef QPair < Pieces::Identities::eIdentities, Pieces::PieceColors::ePieceColors > definedPieceType;
   typedef QMap < boardCoordinateType, definedPieceType > boardStateMapType;
+  typedef QMapIterator < boardCoordinateType, definedPieceType > boardStateMapIteratorType;
   typedef QList < definedPieceType > piecesListType;
 }
 
@@ -69,7 +70,7 @@ public:
                                boardCoordinateType pointB,
                                boardStateMapType& boardStateToSearch);
 
-  void mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location);
+  void mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& staeMapToUse);
 
   boardCoordinatesType findPieces(definedPieceType piece, boardStateMapType& boardStateToSearch);
   bool evaluateBoardState(boardStateMapType& boardStateToEvaluate);
@@ -106,7 +107,7 @@ public:
   QSharedPointer<Player>& player2();
   void setPlayer2(const QSharedPointer<Player>& player2);
 
-  bool isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked, Pieces::Identities::eIdentities identityThatIsToBeAttacked, boardCoordinatesType& container, boardStateMapType& boardStateToUse);
+  bool isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked, Pieces::Identities::eIdentities identityThatIsToBeAttacked, boardCoordinatesType& container, boardStateMapType& boardStateToUse, boardCoordinateType& locationOfAttacker, boardCoordinateType& locationOfVictim, definedPieceType& pieceWhoWillBeAttacking, definedPieceType& pieceWhoWillBeAttacked);
 
   boardCoordinateType locationOfAttacker() const;
   void setLocationOfAttacker(const boardCoordinateType& locationOfAttacker);
@@ -123,6 +124,7 @@ public:
   void uncheckAllCheckedCells();
   void highLightCoordinates(boardCoordinatesType& set);
   void toggleCell(Cell* cell);
+  bool isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse, boardStateMapType& stateMapToUse);
 
 public slots:
   void clearHighLights();
@@ -158,13 +160,12 @@ private:
 
   boardCoordinateType _locationOfAttacker;
   boardCoordinateType _locationOfVictim;
-  definedPieceType _pieceWhoWillBeAttacking;
-  definedPieceType _pieceWhoWillBeAttacked;
+  definedPieceType    _pieceWhoWillBeAttacking;
+  definedPieceType    _pieceWhoWillBeAttacked;
 
   void resetBoard(bool styleOnly);
   void initializeBoardCell(Cell* cell);
   void createStartupMap(boardStateMapType& mapToInitialize);
-  bool isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse);
   void redrawBoardFromMap(boardStateMapType currentBoardStateMap);
 
   boardCoordinateType findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound, Pieces::Identities::eIdentities identityThatIsToBeFound);
