@@ -15,8 +15,8 @@
 Chess::Chess(QWidget* parent) :
   QMainWindow(parent),
   ui(new Ui::Chess),
-  _player1(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite)),
-  _player2(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack)),
+  _humanPlayer(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite)),
+  _aiPlayer(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack)),
   _artificialIntelligence(new MoveGenerator())
 {
   ui->setupUi(this);
@@ -25,11 +25,11 @@ Chess::Chess(QWidget* parent) :
   pm.load(":/Icons/Resources/chess_logo.png", "PNG");
   QIcon icon = QIcon(pm);
   setWindowIcon(icon);
-  ui->_theGameBoard->setPlayer1(_player1);
-  ui->_theGameBoard->setPlayer2(_player2);
+  ui->_theGameBoard->setHumanPlayer(_humanPlayer);
+  ui->_theGameBoard->setAiPlayer(_aiPlayer);
 
   _artificialIntelligence->associateGameBoard(ui->_theGameBoard);
-  _artificialIntelligence->setAiPlayer(_player2);
+  _artificialIntelligence->setAiPlayer(_aiPlayer);
 
   MoveMapper::getInstance().associateGameBoard(ui->_theGameBoard);
 
@@ -92,12 +92,12 @@ Chess::~Chess()
 void Chess::on_action_New_Game_triggered()
 {
   ui->_theGameBoard->resetBoard(false, false);
-  _player1.reset(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite));
-  _player2.reset(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack));
+  _humanPlayer.reset(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite));
+  _aiPlayer.reset(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack));
   ui->_theGameBoard->setEnabled(true);
-  ui->_theGameBoard->setPlayer1(_player1);
-  ui->_theGameBoard->setPlayer2(_player2);
-  TurnManager::getInstance().switchPlayers(_player1);
+  ui->_theGameBoard->setHumanPlayer(_humanPlayer);
+  ui->_theGameBoard->setAiPlayer(_aiPlayer);
+  TurnManager::getInstance().switchPlayers(_humanPlayer);
 }
 
 ///

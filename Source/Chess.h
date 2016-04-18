@@ -35,8 +35,8 @@ private slots:
 private:
   Ui::Chess* ui;
 
-  QSharedPointer<Player> _player1;
-  QSharedPointer<Player> _player2;
+  QSharedPointer<Player> _humanPlayer;
+  QSharedPointer<Player> _aiPlayer;
   QScopedPointer<MoveGenerator> _artificialIntelligence;
   QList<CapturedPieceWidget> _blackPieces;
   QList<CapturedPieceWidget> _whitePieces;

@@ -1,3 +1,30 @@
+/**
+ * @file   Board.cpp
+ * @author Louis Parkin (louis.parkin@stonethree.com)
+ * @date   April 2016
+ * @brief  This file contains te inner management features of a chess board
+ *
+ * In this cpp file is housed all the functions and attributes needed to construct and manage a
+ * a chess board in three different stages of play; backed up, current, and proposed states.
+ *
+ * It is made up of Cells that contain pieces, and these are mapped by (x,y) (row,column)
+ * coordinate sets.
+ *
+ * The states that are used to keep track of how the game is played are static.
+ * The board also contains most of the logic required to restrict and control
+ * the movements of pieces across the board.
+ *
+ * The board provides a state-evaluation function, as well as functions to
+ * manipulate the states for the purpose of evaluating possible future moves,
+ * before committing to make the move.
+ *
+ * The state evaluation only relates to whether or not the current player's king
+ * is currently checked (in the state being evaluated).
+ *
+ * If evaluate state finds the state to be invalid, the details are logged as
+ * coordinates and pieces that play a role in the checked state of the king.
+ */
+
 #include "Board.h"
 #include "ui_Board.h"
 
@@ -18,8 +45,13 @@ piecesListType Board::_backedUpCapturedPieces = piecesListType();
 piecesListType Board::_stagingCapturedPieces  = piecesListType();
 
 ///
-/// \brief Board::Board
-/// \param parent
+/// \brief Board::Board() is the constructor for class Board
+/// \param parent is the default parameter for any class based on QObject, like Board is.
+///
+/// Qt Framework uses the concept of parenting to ensure raw pointer types
+/// are destroyed when their parents destroy.  Also, with some GUI classes,
+/// parenting automatically embeds or positions the child element inside,
+/// or on top of the parent.
 ///
 Board::Board(QWidget* parent):
   QWidget(parent),
@@ -30,7 +62,7 @@ Board::Board(QWidget* parent):
 }
 
 ///
-/// \brief Board::~Board
+/// \brief Board::~Board() is the destructor for class Board.
 ///
 Board::~Board()
 {
@@ -38,11 +70,11 @@ Board::~Board()
 }
 
 ///
-/// \brief Board::updatePieceMap
-/// \param from
-/// \param to
-/// \param boardStateMap
-/// \param capturedPiecesContainer
+/// \brief Board::updatePieceMap() takes a given state map, and "performs a move" from one Cell to another
+/// \param from [in] is the Cell where the piece that will be moved resides in the given state map.
+/// \param to [in] is the Cell where the piece will be moved to within the same state map.
+/// \param boardStateMap [in,out] the board state map to be used during the move.
+/// \param capturedPiecesContainer [in,out] is a list used to keep track of captured pieces.
 ///
 void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMap, piecesListType& capturedPiecesContainer)
 {
@@ -67,7 +99,7 @@ void Board::updatePieceMap(Cell* from, Cell* to, boardStateMapType& boardStateMa
 }
 
 ///
-/// \brief Board::clearHighLights
+/// \brief Board::clearHighLights() removes highlighted colouring on all cells across the board
 ///
 void Board::clearHighLights()
 {
@@ -84,8 +116,8 @@ void Board::clearHighLights()
 }
 
 ///
-/// \brief Board::moveInitiated
-/// \param fromWhere
+/// \brief Board::moveInitiated() prepares the board for an actual move
+/// \param fromWhere [in] is a board coordinate (row,column) that the player selected as a starting point.
 ///
 void Board::moveInitiated(boardCoordinateType fromWhere)
 {
@@ -272,8 +304,8 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
 }
 
 ///
-/// \brief Board::continueInitiatedMove
-/// \param whereTo
+/// \brief Board::continueInitiatedMove() is the second leg of a move initiated previously, @see moveInitiated()
+/// \param whereTo [in] is the destination cell for the second leg of the move.
 ///
 void Board::continueInitiatedMove(boardCoordinateType whereTo)
 {
@@ -309,25 +341,33 @@ void Board::continueInitiatedMove(boardCoordinateType whereTo)
 }
 
 ///
-/// \brief Board::handleMoveInitiatedComplete
-/// \param playerWhoInitiated
+/// \brief Board::handleMoveInitiatedComplete() starts a timer of 400ms after a move initiation has completed.
+/// \param playerWhoInitiated [in] is either the AI (aiPlayer) or the human participant (humanPlayer)
+///
+/// A human would normally complete both steps of a movement without being prompted to do so.
+/// The AI however is not quite human, and requires some encouragement, hence the timer and timerEvent.
 ///
 void Board::handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated)
 {
-  if (playerWhoInitiated->identity() == player2()->identity()) {
+  if (playerWhoInitiated->identity() == aiPlayer()->identity()) {
     startTimer(400);
   }
 }
 
+///
+/// \brief Board::timerEvent() is called when the 400ms timer fires an event. @see handleMoveInitiatedComplete()
+/// \param event [in] details the event that fired.
+///
 void Board::timerEvent(QTimerEvent* event)
 {
+  // Immediately kill the timer, as only one action by the AI is required.
   killTimer(event->timerId());
   emit aiMoveCompletionRequired();
 }
 
 ///
-/// \brief Board::pieceWhoWillBeAttacked
-/// \return
+/// \brief Board::pieceWhoWillBeAttacked() provides information about the king that is checked, when state evaluation returns as invalid.
+/// \return a defined piece type with information on the piece that will be attacked.
 ///
 definedPieceType Board::pieceWhoWillBeAttacked() const
 {
@@ -335,8 +375,8 @@ definedPieceType Board::pieceWhoWillBeAttacked() const
 }
 
 ///
-/// \brief Board::setPieceWhoWillBeAttacked
-/// \param pieceWhoWillBeAttacked
+/// \brief Board::setPieceWhoWillBeAttacked() setter method for allocating information during state evaluation.
+/// \param pieceWhoWillBeAttacked [in] a defined piece type with information on the piece that will be attacked.
 ///
 void Board::setPieceWhoWillBeAttacked(const definedPieceType& pieceWhoWillBeAttacked)
 {
@@ -344,8 +384,8 @@ void Board::setPieceWhoWillBeAttacked(const definedPieceType& pieceWhoWillBeAtta
 }
 
 ///
-/// \brief Board::pieceWhoWillBeAttacking
-/// \return
+/// \brief Board::pieceWhoWillBeAttacking() provides information about the king's attacker, when state evaluation returns as invalid.
+/// \return a defined piece type with information on the piece that will be attacking.
 ///
 definedPieceType Board::pieceWhoWillBeAttacking() const
 {
@@ -353,8 +393,8 @@ definedPieceType Board::pieceWhoWillBeAttacking() const
 }
 
 ///
-/// \brief Board::setPieceWhoWillBeAttacking
-/// \param pieceWhoWillBeAttacking
+/// \brief Board::setPieceWhoWillBeAttacking() setter method for allocating information during state evaluation.
+/// \param pieceWhoWillBeAttacking [in] a defined piece type with information on the piece that will be attacking.
 ///
 void Board::setPieceWhoWillBeAttacking(const definedPieceType& pieceWhoWillBeAttacking)
 {
@@ -362,8 +402,8 @@ void Board::setPieceWhoWillBeAttacking(const definedPieceType& pieceWhoWillBeAtt
 }
 
 ///
-/// \brief Board::locationOfVictim
-/// \return
+/// \brief Board::locationOfVictim() returns the board coordinate of the king that is checked, when state evaluation returns as invalid.
+/// \return a board coordinate type defined as QPair<int,int> (row,column)
 ///
 boardCoordinateType Board::locationOfVictim() const
 {
@@ -371,8 +411,8 @@ boardCoordinateType Board::locationOfVictim() const
 }
 
 ///
-/// \brief Board::setLocationOfVictim
-/// \param locationOfVictim
+/// \brief Board::setLocationOfVictim() setter method for allocating information during state evaluation.
+/// \param locationOfVictim [in] the board coordinate of the king that is checked, set when state evaluation returns as invalid.
 ///
 void Board::setLocationOfVictim(const boardCoordinateType& locationOfVictim)
 {
@@ -380,8 +420,8 @@ void Board::setLocationOfVictim(const boardCoordinateType& locationOfVictim)
 }
 
 ///
-/// \brief Board::locationOfAttacker
-/// \return
+/// \brief Board::locationOfAttacker() returns the board coordinate of the king's attacker, when state evaluation returns as invalid.
+/// \return a board coordinate type defined as QPair<int,int> (row,column)
 ///
 boardCoordinateType Board::locationOfAttacker() const
 {
@@ -389,8 +429,8 @@ boardCoordinateType Board::locationOfAttacker() const
 }
 
 ///
-/// \brief Board::setLocationOfAttacker
-/// \param locationOfAttacker
+/// \brief Board::setLocationOfAttacker() setter method for allocating information during state evaluation.
+/// \param locationOfAttacker [in] the board coordinate of the king's attacker, set when state evaluation returns as invalid.
 ///
 void Board::setLocationOfAttacker(const boardCoordinateType& locationOfAttacker)
 {
@@ -398,46 +438,50 @@ void Board::setLocationOfAttacker(const boardCoordinateType& locationOfAttacker)
 }
 
 ///
-/// \brief Board::player2
-/// \return
+/// \brief Board::aiPlayer() returns the AI Player Object
+/// \return a QSharedPointer<Player> reference to the caller.
+/// Players are created in Chess.cpp
 ///
-QSharedPointer<Player>& Board::player2()
+QSharedPointer<Player>& Board::aiPlayer()
 {
   return _aiPlayer;
 }
 
 ///
-/// \brief Board::setPlayer2
-/// \param player2
+/// \brief Board::setAiPlayer() allocates a Player entity to be used for the AI.
+/// \param aiPlayer [in] is a const QSharedPointer<Player> reference as created in Chess.cpp, and shared with the Board.
 ///
-void Board::setPlayer2(const QSharedPointer<Player>& player2)
+void Board::setAiPlayer(const QSharedPointer<Player>& aiPlayer)
 {
-  _aiPlayer = player2;
+  _aiPlayer = aiPlayer;
 }
 
 ///
-/// \brief Board::player1
-/// \return
+/// \brief Board::humanPlayer() returns the human Player Object
+/// \return a QSharedPointer<Player> reference to the caller.
+/// Players are created in Chess.cpp
 ///
-QSharedPointer<Player>& Board::player1()
+QSharedPointer<Player>& Board::humanPlayer()
 {
   return _humanPlayer;
 }
 
 ///
-/// \brief Board::setPlayer1
-/// \param player1
+/// \brief Board::setHumanPlayer() allocates a Player entity to be used by the human player.
+/// \param humanPlayer [in] is a const QSharedPointer<Player> reference as created in Chess.cpp, and shared with the Board.
 ///
-void Board::setPlayer1(const QSharedPointer<Player>& player1)
+void Board::setHumanPlayer(const QSharedPointer<Player>& humanPlayer)
 {
-  _humanPlayer = player1;
+  _humanPlayer = humanPlayer;
 }
 
 ///
-/// \brief Board::findPiece
-/// \param colorThatIsToBeFound
-/// \param identityThatIsToBeFound
-/// \return
+/// \brief Board::findPiece() finds a piece defined by color and identity (pawn, knight, etc...)
+/// \param colorThatIsToBeFound [in] is the Pieces::PieceColors::ePieceColors value that represents the colour of the piece to be found
+/// \param identityThatIsToBeFound [in] is the Pieces::Identities::eIdentities value that represents the identity of the piece to be found
+/// \param boardStateToUse [in] the board state to search for the piece in question.
+/// \return the coordinate where the piece can be found.
+/// This implementation is a parameter overloaded version of the one that combines identity and color into definedPieceType
 ///
 boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound,
                                      Pieces::Identities::eIdentities identityThatIsToBeFound,
@@ -448,9 +492,11 @@ boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThat
 }
 
 ///
-/// \brief Board::findPiece
-/// \param piece
-/// \return
+/// \brief Board::findPiece() finds a piece defined by color and identity (pawn, knight, etc...), combined as definedPieceType
+/// \param piece [in] a definedPieceType variable that contains the color and identity of the piece to be searched for.
+/// \param boardStateToUse [in] the board state to search for the piece in question.
+/// \return the coordinate where the piece can be found.
+/// This implementation is called by a parameter overloaded version of the one that takes identity and color separately.
 ///
 boardCoordinateType Board::findPiece(definedPieceType piece, boardStateMapType& boardStateToUse)
 {
@@ -493,10 +539,13 @@ boardCoordinateType Board::findPiece(definedPieceType piece, boardStateMapType& 
 }
 
 ///
-/// \brief Board::findPieces
-/// \param piece
-/// \param boardStateToSearch
-/// \return
+/// \brief Board::findPieces() is a replacement for the two findPiece functions.
+/// \param piece [in] is the identity and color as definedPieceType of the pieces to find
+/// \param boardStateToSearch [in] is the state that will be searched to locate the pieces in question
+/// \return the boardCoordinatesType defined as a QSet<boardCoordinateType> containing the search result(s)
+/// The reason for replacing the findPiece functions with this one, was that with the exception of
+/// King and Queen, there may be more than just one of each piece definition on the board at
+/// any given time.
 ///
 boardCoordinatesType Board::findPieces(definedPieceType piece, boardStateMapType& boardStateToSearch)
 {
@@ -542,8 +591,9 @@ boardCoordinatesType Board::findPieces(definedPieceType piece, boardStateMapType
 }
 
 ///
-/// \brief Board::highLightCoordinates
-/// \param set
+/// \brief Board::highLightCoordinates() simply does as the name says. It highlights board cells by coordinate.
+/// \param set [in] is a QSet<boardCoordinateType> that contains Cell coordinates to highlight.
+/// This function is generally used to display the valid moves a selected piece can make.
 ///
 void Board::highLightCoordinates(boardCoordinatesType& set)
 {
@@ -560,8 +610,8 @@ void Board::highLightCoordinates(boardCoordinatesType& set)
 }
 
 ///
-/// \brief Board::toggleCell
-/// \param cell
+/// \brief Board::toggleCell() is a function used by the AI to simulate the clicking of a checkable Cell
+/// \param cell [in] is the Cell that the AI wants to "click"
 ///
 void Board::toggleCell(Cell* cell)
 {
@@ -569,11 +619,14 @@ void Board::toggleCell(Cell* cell)
 }
 
 ///
-/// \brief Board::getPath
-/// \param pointA
-/// \param pointB
-/// \param boardStateToSearch
-/// \return
+/// \brief Board::getPath() calculates a direct path between two points on the Board.
+/// \param pointA [in] is the start coordinate of the path to be calculated.
+/// \param pointB [in] is the end coordinate of the path to be calculated.
+/// \param boardStateToSearch [in] is the state to use when calculating the path.
+/// \return the se of coordinates that represent the path between pointA and pointB
+/// The state is needed, as in two different scenarios, pieces on the board may be in different places, and
+/// a crucial element to whether a path between pieces exist, is that there may be no other pieces
+/// on the path between them.
 ///
 boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateType pointB, boardStateMapType& boardStateToSearch)
 {
@@ -694,9 +747,25 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
 }
 
 ///
-/// \brief Board::evaluateBoardState
-/// \param boardStateToEvaluate
-/// \return
+/// \brief Board::evaluateBoardState() determines whether the king of the current player is in danger.
+/// \param boardStateToEvaluate [in] is the board state to be evaluated.
+/// \return the state "validity" of the board (true = king is not checked, i.e. Board state is valid)
+///
+/// Example usage:
+/// @code
+///   bool isCurrentStateValid = evaluateBoardState (currentBoardState);
+///   if (isCurrentStateValid) {
+///     movePieceStart (this, fromCell, toCell, currentBoardState, currentCapturedPiecesList);
+///   }
+///
+///   bool isCurrentStateStillValid  = evaluateBoardState (currentBoardState);
+///   if (isCurrentStateStillValid) {
+///     movePieceCompleteMove (this, currentBoardState);
+///   }
+///   else {
+///     movePieceRevertMove (currentBoardState, currentCapturedPiecesList);
+///   }
+/// @endcode
 ///
 bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 {
@@ -730,12 +799,16 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 }
 
 ///
-/// \brief Board::isTheTargetWithinRange
-/// \param colorThatIsToBeAttacked
-/// \param identityThatIsToBeAttacked
-/// \param container
-/// \param boardStateToUse
-/// \return
+/// \brief Board::isTheTargetWithinRange() determines if any piece of the opposing side is able to attack a given piece.
+/// \param colorThatIsToBeAttacked [in] the color (black or white) of the piece to be attacked.
+/// \param identityThatIsToBeAttacked [in] the identity (pawn, king, knight, etc.) of the piece to be attacked.
+/// \param container [in,out] is a container used to output the location of the piece to be attacked.
+/// \param boardStateToUse [in] is the state of the Board to use when mapping the attack.
+/// \param locationOfAttacker [out] is the location of any piece that can attack the "victim".
+/// \param locationOfVictim [out] is the location of the piece that will be attacked.
+/// \param pieceWhoWillBeAttacking [out] the definedPieceType value of the attacker.
+/// \param pieceWhoWillBeAttacked [out] the definedPieceType value of the victim.
+/// \return true if the target can be reached, false if it cannot.
 ///
 bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
                                    Pieces::Identities::eIdentities identityThatIsToBeAttacked,
@@ -757,9 +830,7 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
   }
 
   boardCoordinatesType::iterator boardCoordsIterator;
-  bool useIterator = false;
   boardCoordsIterator = targetsLocation.begin();
-  useIterator = true;
 
 
   for (int i = 0; i < targetsLocation.size(); ++i) {
@@ -809,12 +880,12 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
 }
 
 ///
-/// \brief Board::movePieceStart
-/// \param _this
-/// \param fromCell
-/// \param toCell
-/// \param scenario
-/// \param scenarioPieces
+/// \brief Board::movePieceStart() prepares the state management to validate and commit a move.
+/// \param _this [in] is the Board instance pointer, needed because movePieceStart is a static function.
+/// \param fromCell [in] the Cell to move from.
+/// \param toCell [in] the Cell to move to.
+/// \param scenario [in,out] the board state map on which the move is to be "staged" for validation.
+/// \param scenarioPieces [in,out] the list of captured pieces that accompanies the board state.
 ///
 void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStateMapType& scenario, piecesListType& scenarioPieces)
 {
@@ -835,9 +906,9 @@ void Board::movePieceStart(Board* _this, Cell* fromCell, Cell* toCell, boardStat
 }
 
 ///
-/// \brief Board::movePieceCompleteMove
-/// \param _this
-/// \param scenario
+/// \brief Board::movePieceCompleteMove() completes a move (@see movePieceStart() )
+/// \param _this [in] is the Board instance pointer, needed because movePieceStart is a static function.
+/// \param scenario [in,out] the board state map on which the move is to be "committed" as final.
 ///
 void Board::movePieceCompleteMove(Board* _this, boardStateMapType& scenario)
 {
@@ -850,7 +921,7 @@ void Board::movePieceCompleteMove(Board* _this, boardStateMapType& scenario)
 }
 
 ///
-/// \brief Board::updateCapturedPieces
+/// \brief Board::updateCapturedPieces() emits a signal to the Chess class to update the captured piece containers on the UI.
 ///
 void Board::updateCapturedPieces()
 {
@@ -858,9 +929,9 @@ void Board::updateCapturedPieces()
 }
 
 ///
-/// \brief Board::movePieceRevertMove
-/// \param scenario
-/// \param scenarioPieces
+/// \brief Board::movePieceRevertMove() reverts a move (@see movePieceStart() )
+/// \param scenario [in,out] the board state map on which the move is to be "reverted" post-validation.
+/// \param scenarioPieces [in,out] the list of captured pieces that accompanies the board state.
 ///
 void Board::movePieceRevertMove(boardStateMapType& scenario, piecesListType& scenarioPieces)
 {
@@ -870,11 +941,12 @@ void Board::movePieceRevertMove(boardStateMapType& scenario, piecesListType& sce
 }
 
 ///
-/// \brief Board::mapMoves
-/// \param rules
-/// \param piece
-/// \param container
-/// \param location
+/// \brief Board::mapMoves() produces a map of technically correct moves for a piece based on the rules supplied.
+/// \param rules [in] a list of directions and magnitudes that represents what is legal for piece.
+/// \param piece [in] the piece to be mapped.
+/// \param container [in,out] the container to stored the mapped moves in.
+/// \param location [in] the starting location of the piece in question.
+/// \param stateMapToUse [in] is the map used to determine possible moves when calling isMoveLegal().
 ///
 void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& stateMapToUse)
 {
@@ -1103,13 +1175,17 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
 }
 
 ///
-/// \brief Board::isMoveLegal
-/// \param moveFrom
-/// \param moveTo
-/// \param containerToUse
-/// \return
+/// \brief Board::isMoveLegal() determines whether a mapped move can be allowed.
+/// \param moveFrom [in] where the piece is.
+/// \param moveTo [in] where the piece wants to go.
+/// \param containerToUse [in] the set of coordinates to use in checking the legality of the move.
+/// \param stateMapToUse [in] the board state to use for the evaluation.
+/// \return true if the move can be allowed, false if not.
 ///
-bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo, boardCoordinatesType& containerToUse, boardStateMapType& stateMapToUse)
+bool Board::isMoveLegal(boardCoordinateType moveFrom,
+                        boardCoordinateType moveTo,
+                        boardCoordinatesType& containerToUse,
+                        boardStateMapType& stateMapToUse)
 {
   Pieces::PieceColors::ePieceColors fromColor = stateMapToUse.value(moveFrom).second;
   Pieces::PieceColors::ePieceColors toColor = stateMapToUse.value(moveTo).second;
@@ -1275,8 +1351,8 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom, boardCoordinateType moveTo
 }
 
 ///
-/// \brief Board::stagingBoardStateMap
-/// \return
+/// \brief Board::stagingBoardStateMap() accessor to the default state map used for preparing a move.
+/// \return the default state map used for preparing a move.
 ///
 boardStateMapType& Board::stagingBoardStateMap()
 {
@@ -1284,8 +1360,8 @@ boardStateMapType& Board::stagingBoardStateMap()
 }
 
 ///
-/// \brief Board::setStagingBoardStateMap
-/// \param stagingBoardStateMap
+/// \brief Board::setStagingBoardStateMap() mutator to manipulate the default state map used for preparing a move.
+/// \param stagingBoardStateMap [in] new allocation of the default state map used for preparing a move
 ///
 void Board::setStagingBoardStateMap(const boardStateMapType& stagingBoardStateMap)
 {
@@ -1293,8 +1369,8 @@ void Board::setStagingBoardStateMap(const boardStateMapType& stagingBoardStateMa
 }
 
 ///
-/// \brief Board::backedUpBoardStateMap
-/// \return
+/// \brief Board::backedUpBoardStateMap() accessor to the default state map used for backup prior to staging a move.
+/// \return the default state map used for backup prior to staging a move.
 ///
 boardStateMapType& Board::backedUpBoardStateMap()
 {
@@ -1302,8 +1378,8 @@ boardStateMapType& Board::backedUpBoardStateMap()
 }
 
 ///
-/// \brief Board::setBackedUpBoardStateMap
-/// \param backedUpBoardStateMap
+/// \brief Board::setBackedUpBoardStateMap() mutator to manipulate the default state map used for backup prior to staging a move.
+/// \param backedUpBoardStateMap [in] new allocation of the default state map used for backup prior to staging a move.
 ///
 void Board::setBackedUpBoardStateMap(const boardStateMapType& backedUpBoardStateMap)
 {
@@ -1311,8 +1387,8 @@ void Board::setBackedUpBoardStateMap(const boardStateMapType& backedUpBoardState
 }
 
 ///
-/// \brief Board::workingBoardStateMap
-/// \return
+/// \brief Board::workingBoardStateMap() accessor to the default state map used as a starting point for all current moves.
+/// \return the default state map used as a starting point for all current moves.
 ///
 boardStateMapType& Board::workingBoardStateMap()
 {
@@ -1320,8 +1396,8 @@ boardStateMapType& Board::workingBoardStateMap()
 }
 
 ///
-/// \brief Board::setWorkingBoardStateMap
-/// \param workingBoardStateMap
+/// \brief Board::setWorkingBoardStateMap() mutator for manipulating the default state map used as a starting point for all current moves.
+/// \param workingBoardStateMap [in] the new allocation of the default state map used as a starting point for all current moves.
 ///
 void Board::setWorkingBoardStateMap(const boardStateMapType& workingBoardStateMap)
 {
@@ -1329,8 +1405,8 @@ void Board::setWorkingBoardStateMap(const boardStateMapType& workingBoardStateMa
 }
 
 ///
-/// \brief Board::stagingCapturedPieces
-/// \return
+/// \brief Board::stagingCapturedPieces() accessor to the default staging container of captured pieces.
+/// \return the default staging container of captured pieces.
 ///
 piecesListType& Board::stagingCapturedPieces()
 {
@@ -1338,8 +1414,8 @@ piecesListType& Board::stagingCapturedPieces()
 }
 
 ///
-/// \brief Board::setStagingCapturedPieces
-/// \param stagingCapturedPieces
+/// \brief Board::setStagingCapturedPieces() mutator for manipulating the default staging container of captured pieces.
+/// \param stagingCapturedPieces [in] the new allocation of the default staging container of captured pieces.
 ///
 void Board::setStagingCapturedPieces(const piecesListType& stagingCapturedPieces)
 {
@@ -1347,8 +1423,8 @@ void Board::setStagingCapturedPieces(const piecesListType& stagingCapturedPieces
 }
 
 ///
-/// \brief Board::backedUpCapturedPieces
-/// \return
+/// \brief Board::backedUpCapturedPieces() accessor to the default backup container of captured pieces.
+/// \return the default backup container of captured pieces.
 ///
 piecesListType& Board::backedUpCapturedPieces()
 {
@@ -1356,8 +1432,8 @@ piecesListType& Board::backedUpCapturedPieces()
 }
 
 ///
-/// \brief Board::setBackedUpCapturedPieces
-/// \param backedUpCapturedPieces
+/// \brief Board::setBackedUpCapturedPieces() mutator for manipulating the default backup container of captured pieces.
+/// \param backedUpCapturedPieces [in] the new allocation of the default backup container of captured pieces.
 ///
 void Board::setBackedUpCapturedPieces(const piecesListType& backedUpCapturedPieces)
 {
@@ -1365,8 +1441,8 @@ void Board::setBackedUpCapturedPieces(const piecesListType& backedUpCapturedPiec
 }
 
 ///
-/// \brief Board::workingCapturedPieces
-/// \return
+/// \brief Board::workingCapturedPieces() accessor to the default working container of captured pieces.
+/// \return the default working container of captured pieces.
 ///
 piecesListType& Board::workingCapturedPieces()
 {
@@ -1374,8 +1450,8 @@ piecesListType& Board::workingCapturedPieces()
 }
 
 ///
-/// \brief Board::setWorkingCapturedPieces
-/// \param workingCapturedPieces
+/// \brief Board::setWorkingCapturedPieces() mutator for manipulating the default backup container of captured pieces.
+/// \param workingCapturedPieces [in] new allocation of the default backup container of captured pieces.
 ///
 void Board::setWorkingCapturedPieces(const piecesListType& workingCapturedPieces)
 {
@@ -1383,8 +1459,10 @@ void Board::setWorkingCapturedPieces(const piecesListType& workingCapturedPieces
 }
 
 ///
-/// \brief Board::resetBoard
-/// \param styleOnly
+/// \brief Board::resetBoard() resets all the cells, pieces, and state maps back to their starting states.
+/// \param styleOnly [in] determines whether to do reset the style only, or style, states, and containers.
+/// This version of resetBoard is a parameter overload for another resetBoard call that can also pass 'true'
+/// as a "this is the first time the board is being reset".  This call however always passes a 'false' value.
 ///
 void Board::resetBoard(bool styleOnly)
 {
@@ -1392,7 +1470,7 @@ void Board::resetBoard(bool styleOnly)
 }
 
 ///
-/// \brief Board::uncheckAllCheckedCells
+/// \brief Board::uncheckAllCheckedCells() does what its name suggests. It unchecks all the cells on the Board.
 ///
 void Board::uncheckAllCheckedCells()
 {
@@ -1413,8 +1491,10 @@ void Board::uncheckAllCheckedCells()
 }
 
 ///
-/// \brief Board::redrawBoardFromMap
-/// \param currentBoardStateMap
+/// \brief Board::redrawBoardFromMap() does what its name suggests.
+/// \param currentBoardStateMap [in] the state that will be drawn.
+/// After a move completes, the new board state has to be drawn to
+/// visually "make the move".
 ///
 void Board::redrawBoardFromMap(boardStateMapType currentBoardStateMap)
 {
@@ -1444,9 +1524,9 @@ void Board::redrawBoardFromMap(boardStateMapType currentBoardStateMap)
 }
 
 ///
-/// \brief Board::resetBoard
-/// \param forTheFirstTime
-/// \param styleOnly
+/// \brief Board::resetBoard() resets the Board, Cells, Containers, and can also connect signals/slots.
+/// \param forTheFirstTime [in] determines whether the signals from cells have to be connected.
+/// \param styleOnly [in] determines whether a Cell will be styled only, or also be allocated a piece.
 ///
 void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
 {
@@ -1484,10 +1564,10 @@ void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
 }
 
 ///
-/// \brief Board::getCell
-/// \param row
-/// \param column
-/// \return
+/// \brief Board::getCell() returns a pointer to a Cell on the Board.
+/// \param row [in] the row coordinate of the Cell to be returned.
+/// \param column [in] the column coordinate of the Cell to be returned.
+/// \return a Cell pointer of the Cell at (row,column).
 ///
 Cell* Board::getCell(int row, int column) const
 {
@@ -1505,9 +1585,9 @@ Cell* Board::getCell(int row, int column) const
 }
 
 ///
-/// \brief Board::getCell
-/// \param position
-/// \return
+/// \brief Board::getCell() overloaded version that combines row and column into boardCoordinateType.
+/// \param position [in] the boardCoordinate of the Cell to be returned.
+/// \return the Cell at position.
 ///
 Cell* Board::getCell(boardCoordinateType position) const
 {
@@ -1515,8 +1595,8 @@ Cell* Board::getCell(boardCoordinateType position) const
 }
 
 ///
-/// \brief Board::initializeBoardCell
-/// \param cell
+/// \brief Board::initializeBoardCell() assigns a piece to a Cell, determined by the working state map.
+/// \param cell [in] the cell that will have a piece allocated to it.
 ///
 void Board::initializeBoardCell(Cell* cell)
 {
@@ -1530,8 +1610,8 @@ void Board::initializeBoardCell(Cell* cell)
 }
 
 ///
-/// \brief Board::createStartupMap
-/// \param mapToInitialize
+/// \brief Board::createStartupMap() creates a map with starting positions of a chess game.
+/// \param mapToInitialize [in,out] the map that will be set to "start".
 ///
 void Board::createStartupMap(boardStateMapType& mapToInitialize)
 {
