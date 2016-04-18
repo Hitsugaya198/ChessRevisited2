@@ -3,6 +3,7 @@
 #include "StyleSheetProcessor.h"
 #include "Colors.h"
 #include "Piece.h"
+#include "TurnManager.h"
 
 #include <QGridLayout>
 #include <QDebug>
@@ -85,6 +86,56 @@ void Cell::resetCheckedCounter()
   _checkedCounter = 0;
 }
 
+bool Cell::checkAccessContinue()
+{
+  // Check that the right user is attempting to move
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
+    // Pieces must be Black or empty
+    if (assignedPiece()->color() != Pieces::PieceColors::eBlack) {
+      if (assignedPiece()->color() != Pieces::PieceColors::eNone) {
+        setChecked(false);
+        highLightCell(false);
+        return false;
+      }
+    }
+  }
+
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eComputer) {
+    // Pieces must be White or empty
+    if (assignedPiece()->color() != Pieces::PieceColors::eWhite) {
+      if (assignedPiece()->color() != Pieces::PieceColors::eNone) {
+        setChecked(false);
+        highLightCell(false);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool Cell::checkAccessInit()
+{
+  // Check that the right user is attempting to move
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
+    // Pieces must be white
+    if (assignedPiece()->color() != Pieces::PieceColors::eWhite) {
+      setChecked(false);
+      highLightCell(false);
+      return false;
+    }
+  }
+
+  if (TurnManager::currentPlayer()->identity() == UserIdentity::eComputer) {
+    // Pieces must be Black
+    if (assignedPiece()->color() != Pieces::PieceColors::eBlack) {
+      setChecked(false);
+      highLightCell(false);
+      return false;
+    }
+  }
+  return true;
+}
+
 ///
 /// \brief Cell::handleCellToggled
 /// \param checked
@@ -94,12 +145,20 @@ void Cell::handleCellToggled(bool checked)
   // Starting a new move
   if (_checkedCounter == 0 && checked) {
     ++_checkedCounter;
+    if (!checkAccessInit()) {
+      --_checkedCounter;
+      return;
+    }
     highLightCell(true);
     emit startingANewMove(position());
     return;
   }
   // Continuing previous move
   else if (_checkedCounter == 1 && checked) {
+    if (!checkAccessContinue()) {
+      ++_checkedCounter;
+      return;
+    }
     --_checkedCounter;
     emit completingMove(position());
     return;
@@ -107,6 +166,10 @@ void Cell::handleCellToggled(bool checked)
   // Unchecking a cell (changed your mind?)
   else if (_checkedCounter == 1 && !checked) {
     --_checkedCounter;
+    if (!checkAccessInit()) {
+      ++_checkedCounter;
+      return;
+    }
   }
   else if (_checkedCounter > 1 || _checkedCounter < 0) {
     _checkedCounter = 0;

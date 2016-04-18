@@ -4,6 +4,7 @@
 #include "TurnManager.h"
 #include "UserIdentity.h"
 #include "Board.h"
+#include "MoveMapper.h"
 
 #include <QMessageBox>
 
@@ -14,8 +15,8 @@
 Chess::Chess(QWidget* parent) :
   QMainWindow(parent),
   ui(new Ui::Chess),
-  _player1(new Player(UserIdentity::eHuman)),
-  _player2(new Player(UserIdentity::eComputer)),
+  _player1(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite)),
+  _player2(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack)),
   _artificialIntelligence(new MoveGenerator())
 {
   ui->setupUi(this);
@@ -30,13 +31,21 @@ Chess::Chess(QWidget* parent) :
   _artificialIntelligence->associateGameBoard(ui->_theGameBoard);
   _artificialIntelligence->setAiPlayer(_player2);
 
-  connect(&TurnManager::getInstance(), SIGNAL(turnChanged(QSharedPointer<Player>&)),
-          _artificialIntelligence.data(), SLOT(handleTurnChange(QSharedPointer<Player>&)));
+  MoveMapper::getInstance().associateGameBoard(ui->_theGameBoard);
+
+  // Lets the AI know that it's now somebody else's turn
+  connect(&TurnManager::getInstance(), SIGNAL(turnChanged(QSharedPointer<Player>&, boardCoordinatesType&, bool)),
+          _artificialIntelligence.data(), SLOT(handleTurnChange(QSharedPointer<Player>&, boardCoordinatesType&, bool)));
+
+  // Lets the AI know it has to complete its move
   connect(ui->_theGameBoard, SIGNAL(aiMoveCompletionRequired()),
           _artificialIntelligence.data(), SLOT(handleMoveCompletionRequired()));
+
+  // Tells the UI to update the containers of captured pieces (visually).
   connect(ui->_theGameBoard, SIGNAL(updateCapturedPiecesSignal()),
           this, SLOT(updateCapturedPieces()));
-  connect(_artificialIntelligence.data(), SIGNAL(endGame(bool)),
+
+  connect(&TurnManager::getInstance(), SIGNAL(endGame(bool)),
           this, SLOT(endGame(bool)));
 
   _blackScrollArea = new QScrollArea(ui->_blackPiecesArea);
@@ -83,8 +92,8 @@ Chess::~Chess()
 void Chess::on_action_New_Game_triggered()
 {
   ui->_theGameBoard->resetBoard(false, false);
-  _player1.reset(new Player(UserIdentity::eHuman));
-  _player2.reset(new Player(UserIdentity::eComputer));
+  _player1.reset(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite));
+  _player2.reset(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack));
   ui->_theGameBoard->setEnabled(true);
   ui->_theGameBoard->setPlayer1(_player1);
   ui->_theGameBoard->setPlayer2(_player2);

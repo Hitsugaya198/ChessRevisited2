@@ -19,11 +19,8 @@ public:
   Board* associatedGameBoard() const;
   void associateGameBoard(Board* associatedGameBoard);
 
-signals:
-  void endGame(bool checkMate);
-
 public slots:
-  void handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersTurn);
+  void handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersTurn, boardCoordinatesType& containerOfPossibleMoves, bool kingIsChecked);
   void handleMoveCompletionRequired();
 
 private:
@@ -33,11 +30,11 @@ private:
   boardCoordinateType _locationEnd;
   boardCoordinatesType _containerForMoving;
   static int _moveStrategy;
-  static bool _moveFromFrontOfContainer;
+  static bool _reverseIterateThroughPieces;
 
-  void moveTheFirstPieceThatCanMove(bool priorityForAttack = false);
-  void moveWithPriorityForAttack();
-  void moveAnyPawnThatCanMove();
+  void moveTheFirstPieceThatCanMove(QSharedPointer<Player>& itIsNowThisPlayersTurn, boardCoordinatesType& containerOfPossibleMoves, bool kingIsChecked, bool priorityForAttack = false);
+  void moveWithPriorityForAttack(QSharedPointer<Player>& itIsNowThisPlayersTurn, boardCoordinatesType& containerOfPossibleMoves, bool kingIsChecked);
+  void moveAnyPieceThatCanMove(QSharedPointer<Player>& itIsNowThisPlayersTurn, boardCoordinatesType& containerOfPossibleMoves, bool kingIsChecked);
 };
 
 #endif // MOVEGENERATOR_H

@@ -155,8 +155,8 @@ private:
 
   boardCoordinatesType _containerForMoving;
 
-  QSharedPointer<Player> _player1;
-  QSharedPointer<Player> _player2;
+  QSharedPointer<Player> _humanPlayer;
+  QSharedPointer<Player> _aiPlayer;
 
   boardCoordinateType _locationOfAttacker;
   boardCoordinateType _locationOfVictim;

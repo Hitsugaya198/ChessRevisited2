@@ -60,7 +60,9 @@ private:
   // Private member functions
   void setColor(bool highLight = false);
 
-signals:
+  bool checkAccessInit();
+  bool checkAccessContinue();
+  signals:
   void startingANewMove(boardCoordinateType positionFrom);
   void completingMove(boardCoordinateType positionTo);
   void nothingToDo();

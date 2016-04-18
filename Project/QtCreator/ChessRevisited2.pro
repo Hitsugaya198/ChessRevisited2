@@ -26,7 +26,9 @@ SOURCES += \
     ../../Source/TurnManager.cpp \
     ../../Source/MoveGenerator.cpp \
     ../../Source/PixmapWidget.cpp \
-    ../../Source/CapturedPieceWidget.cpp
+    ../../Source/CapturedPieceWidget.cpp \
+    ../../Source/AppFilter.cpp \
+    ../../Source/MoveMapper.cpp
 
 HEADERS  += \
     ../../Source/Chess.h \
@@ -42,7 +44,9 @@ HEADERS  += \
     ../../Source/TurnManager.h \
     ../../Source/MoveGenerator.h \
     ../../Source/PixmapWidget.h \
-    ../../Source/CapturedPieceWidget.h
+    ../../Source/CapturedPieceWidget.h \
+    ../../Source/AppFilter.h \
+    ../../Source/MoveMapper.h
 
 FORMS    += ../../Source/Chess.ui \
             ../../Source/Board.ui \

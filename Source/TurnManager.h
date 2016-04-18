@@ -2,6 +2,8 @@
 #define TURNMANAGER_H
 
 #include "Player.h"
+#include "AppFilter.h"
+#include "MoveMapper.h"
 
 #include <QObject>
 
@@ -21,7 +23,8 @@ public:
   static void switchPlayers(QSharedPointer<Player>& toWhichPlayer);
 
 signals:
-  void turnChanged(QSharedPointer<Player>& toWhichPlayer);
+  void turnChanged(QSharedPointer<Player>& toWhichPlayer, boardCoordinatesType& containerOfPossibleMoves, bool kingIsChecked);
+  void endGame(bool checkMate);
 
 public slots:
 
@@ -32,6 +35,8 @@ private:
 
   static QSharedPointer<Player> _currentPlayer;
   void setCurrentPlayer(const QSharedPointer<Player>& currentPlayer);
+
+  static AppFilter* _filter;
 };
 
 #endif // TURNMANAGER_H
