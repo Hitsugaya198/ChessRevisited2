@@ -76,86 +76,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
       // Map it's possible moves.  _theGameBoard->mapMoves() only returns "legal" moves
       _theGameBoard->mapMoves(rules, currentPiece, container, currentPieceLocation, currentStateOfTheGameBoard);
 
-      // If the current piece is the king, and we cannot attack, we must run away
-      if (currentPiece.first == Pieces::Identities::eKing) {
-        if (!container.isEmpty()) {
-          boardCoordinatesType set;
-          bool canItBeAttacked = _theGameBoard->isTheTargetWithinRange(Pieces::flipColor(whichPlayer->associatedColor()),
-                                                                       _theGameBoard->pieceWhoWillBeAttacking().first,
-                                                                       set,
-                                                                       currentStateOfTheGameBoard,
-                                                                       locationOfAttacker,
-                                                                       locationOfVictim,
-                                                                       pieceWhoWillBeAttacking,
-                                                                       pieceWhoWillBeAttacked);
-          if (canItBeAttacked) {
-            // Attack the bugger
-            locationStart = locationOfAttacker;
-//            _locationEnd = locationOfVictim;
-            availableMovesContainer = set;
-            break;
-          }
-          else {
-            // Run away
-            boardCoordinatesType set = _theGameBoard->getPath(_theGameBoard->locationOfVictim(), _theGameBoard->locationOfAttacker(), currentStateOfTheGameBoard);
-            bool pathCanBePotentiallyAvoided = !set.isEmpty();
-            if (pathCanBePotentiallyAvoided) {
-              boardCoordinatesType possibleMoves = container.subtract(set);
-              if (!possibleMoves.isEmpty()) {
-                // record the starting-cell, highlight the outcomes
-                locationStart = currentPieceLocation;
-//                _locationEnd = *(possibleMoves.begin());
-                availableMovesContainer = possibleMoves;
-                break;
-              }
-              else {
-                // Selected piece has no available moves.
-              }
-            }
-          }
-        }
-      }
-      else if (currentPiece.first == Pieces::Identities::eKnight) {
-        // Knight's path is L-shaped, not straight horizontal/vertical/diagonal like the other pieces
-        // It is a piece, it is the right color.  Map it's move-rules
-
-        if (!container.isEmpty()) {
-          boardCoordinatesType set;
-          bool canItBeAttacked = _theGameBoard->isTheTargetWithinRange(Pieces::flipColor(whichPlayer->associatedColor()),
-                                                                       _theGameBoard->pieceWhoWillBeAttacking().first,
-                                                                       set,
-                                                                       currentStateOfTheGameBoard,
-                                                                       locationOfAttacker,
-                                                                       locationOfVictim,
-                                                                       pieceWhoWillBeAttacking,
-                                                                       pieceWhoWillBeAttacked);
-          if (canItBeAttacked) {
-            // Attack the bugger
-            locationStart = locationOfAttacker;
-//            _locationEnd = locationOfVictim;
-            availableMovesContainer = set;
-            break;
-          }
-          else {
-            // try to block his path
-            boardCoordinatesType set = _theGameBoard->getPath(_theGameBoard->locationOfVictim(), _theGameBoard->locationOfAttacker(), currentStateOfTheGameBoard);
-            bool pathCanBePotentiallyBlocked = !set.isEmpty();
-            if (pathCanBePotentiallyBlocked) {
-              boardCoordinatesType possibleMoves = set.intersect(container);
-              if (!possibleMoves.isEmpty()) {
-                // record the starting-cell, highlight the outcomes
-                locationStart = currentPieceLocation;
-//                _locationEnd = *(possibleMoves.begin());
-                availableMovesContainer = possibleMoves;
-              }
-              else {
-                // Selected piece has no available moves.
-              }
-            }
-          }
-        }
-      }
-      else {
+      if (!container.isEmpty()) {
         boardCoordinatesType set;
         bool canItBeAttacked = _theGameBoard->isTheTargetWithinRange(Pieces::flipColor(whichPlayer->associatedColor()),
                                                                      _theGameBoard->pieceWhoWillBeAttacking().first,
@@ -166,58 +87,82 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
                                                                      pieceWhoWillBeAttacking,
                                                                      pieceWhoWillBeAttacked);
         if (canItBeAttacked) {
-          // Attack the bugger
-          locationStart = locationOfAttacker;
-//          _locationEnd = locationOfVictim;
-          availableMovesContainer = set;
-          break;
+          // Attack the bugger from anywhere
+
+          // But first make sure it is not going to result in a broken board state
+          Cell* from = _theGameBoard->getCell(locationOfAttacker);
+          Cell* to = _theGameBoard->getCell(locationOfVictim);
+
+          boardStateMapType scenario = boardStateMapType(currentStateOfTheGameBoard);
+          piecesListType scenarioPieces = piecesListType(_theGameBoard->workingCapturedPieces());
+
+          _theGameBoard->movePieceStart(_theGameBoard, from, to, scenario, scenarioPieces);
+
+          bool boardStillValid = _theGameBoard->evaluateBoardState(scenario);
+
+          _theGameBoard->movePieceRevertMove(scenario, scenarioPieces);
+
+          if (boardStillValid) { // attacking won't keep the king in a compromised state
+            locationStart = locationOfAttacker;
+            availableMovesContainer = set;
+            break;
+          }
+          else { // attacking will keep the king in a compromised state
+            continue;
+          }
         }
-        else { // can we block its path? The King should NEVER do this
-          set = _theGameBoard->getPath(_theGameBoard->locationOfVictim(), _theGameBoard->locationOfAttacker(), currentStateOfTheGameBoard);
-          bool pathCanBePotentiallyBlocked = !set.isEmpty();
-          if (pathCanBePotentiallyBlocked) {
+        else {
+          // try to block his path
+          boardCoordinatesType set = _theGameBoard->getPath(_theGameBoard->locationOfVictim(), _theGameBoard->locationOfAttacker(), currentStateOfTheGameBoard);
+//          bool pathCanBePotentiallyBlocked = !set.isEmpty();
+//          if (pathCanBePotentiallyBlocked) {
 
-            boardCoordinatesType possibleMoves;
-            if (currentPiece.first == Pieces::Identities::eKing) {
-              possibleMoves = container.subtract(set);
-            }
-            else {
-              possibleMoves = set.intersect(container);
-            }
+          boardCoordinatesType possibleMoves;
+          if (currentPiece.first == Pieces::Identities::eKing) {
+            // If the current piece is the king, and we cannot attack, we must run away
+            possibleMoves = container.subtract(set);
+          }
+          else {
+            possibleMoves = set.intersect(container);
+          }
 
-            if (!possibleMoves.isEmpty()) {
+          if (!possibleMoves.isEmpty()) {
 
-              // One last check to see if any of the proposed moves will in fact result in an invalid board state.
-              boardCoordinatesType::iterator possibleMovesIterator = possibleMoves.begin();
-              while (possibleMovesIterator != possibleMoves.end()) {
-                boardStateMapType tempState = currentStateOfTheGameBoard;
-                piecesListType tempPieces =  _theGameBoard->workingCapturedPieces();
-                boardCoordinateType toWhere = *possibleMovesIterator;
-                Cell* from = _theGameBoard->getCell(currentPieceLocation);
-                Cell* to = _theGameBoard->getCell(toWhere);
-                Board::movePieceStart(_theGameBoard, from, to, tempState, tempPieces);
+            // Iterate through the possible moves to find one that leaves the board in a legal state
+            boardCoordinatesType::iterator possibleMovesIterator = possibleMoves.begin();
+            Cell* from = _theGameBoard->getCell(currentPieceLocation);
+            bool breakOutOfOuterWhile = false;
+            while (possibleMovesIterator != possibleMoves.end()) {
+              Cell* to = _theGameBoard->getCell(*possibleMovesIterator);
+              ++possibleMovesIterator;
 
-                bool boardStillValid = _theGameBoard->evaluateBoardState(tempState);
-                if (!boardStillValid) { // this will check the current player's king
-                  possibleMoves.remove(toWhere);
-                  possibleMovesIterator = possibleMoves.begin();
-                }
-                else {
-                  ++possibleMovesIterator;
-                }
-                Board::movePieceRevertMove(tempState, tempPieces);
-              }
+              boardStateMapType scenario = boardStateMapType(currentStateOfTheGameBoard);
+              piecesListType scenarioPieces = piecesListType(_theGameBoard->workingCapturedPieces());
 
-              if (!possibleMoves.isEmpty()) {
+              _theGameBoard->movePieceStart(_theGameBoard, from, to, scenario, scenarioPieces);
+
+              bool boardStillValid = _theGameBoard->evaluateBoardState(scenario);
+
+              _theGameBoard->movePieceRevertMove(scenario, scenarioPieces);
+
+              if (boardStillValid) {
                 locationStart = currentPieceLocation;
                 availableMovesContainer = possibleMoves;
-                break;
+                breakOutOfOuterWhile = true;
+                break; // while(possibleMovesIterator != possibleMoves.end())
+              }
+              else {
+                continue; // while(possibleMovesIterator != possibleMoves.end())
               }
             }
-            else {
-              // Selected piece has no available moves.
+            if (breakOutOfOuterWhile) { // while (hasPreviousOrNext)
+              break;
             }
           }
+          else {
+            // Selected piece has no available moves.
+          }
+//          }
         }
       }
     }
@@ -273,7 +218,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
     }
   }
 
-  *kingChecked = boardIsValid;
+  * kingChecked = !boardIsValid;
 
   if (availableMovesContainer.isEmpty()) {
     // Literally NO PIECE can move

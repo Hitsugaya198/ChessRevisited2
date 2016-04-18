@@ -105,7 +105,7 @@ void Chess::on_action_New_Game_triggered()
 ///
 void Chess::on_actionE_xit_triggered()
 {
-
+  QApplication::exit(0);
 }
 
 ///

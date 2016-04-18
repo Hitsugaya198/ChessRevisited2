@@ -440,10 +440,11 @@ void Board::setPlayer1(const QSharedPointer<Player>& player1)
 /// \return
 ///
 boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound,
-                                     Pieces::Identities::eIdentities identityThatIsToBeFound)
+                                     Pieces::Identities::eIdentities identityThatIsToBeFound,
+                                     boardStateMapType& boardStateToUse)
 {
   definedPieceType pieceType = definedPieceType(identityThatIsToBeFound, colorThatIsToBeFound);
-  return findPiece(pieceType);
+  return findPiece(pieceType, boardStateToUse);
 }
 
 ///
@@ -451,7 +452,7 @@ boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThat
 /// \param piece
 /// \return
 ///
-boardCoordinateType Board::findPiece(definedPieceType piece)
+boardCoordinateType Board::findPiece(definedPieceType piece, boardStateMapType& boardStateToUse)
 {
   boardCoordinateType pieceLocation = boardCoordinateType(0, 0);
   bool foundIt = false;
@@ -464,7 +465,7 @@ boardCoordinateType Board::findPiece(definedPieceType piece)
 
     for (int column = eMinColumn; column <= eMaxColumn; ++column) {
       boardCoordinateType currentCoordinate = boardCoordinateType(row, column);
-      definedPieceType currentPiece = _workingBoardStateMap.value(currentCoordinate);
+      definedPieceType currentPiece = boardStateToUse.value(currentCoordinate);
 
       Pieces::Identities::eIdentities currentPieceIdentity = currentPiece.first;
       Pieces::PieceColors::ePieceColors currentPieceColor = currentPiece.second;
@@ -502,7 +503,7 @@ boardCoordinatesType Board::findPieces(definedPieceType piece, boardStateMapType
   boardCoordinatesType retVal;
   if (piece.first == Pieces::Identities::eKing ||
       piece.first == Pieces::Identities::eQueen) { // Only one of each
-    boardCoordinateType partOfRetVal = findPiece(piece);
+    boardCoordinateType partOfRetVal = findPiece(piece, boardStateToSearch);
     retVal.insert(partOfRetVal);
     return retVal;
   }

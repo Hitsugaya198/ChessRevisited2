@@ -168,8 +168,8 @@ private:
   void createStartupMap(boardStateMapType& mapToInitialize);
   void redrawBoardFromMap(boardStateMapType currentBoardStateMap);
 
-  boardCoordinateType findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound, Pieces::Identities::eIdentities identityThatIsToBeFound);
-  boardCoordinateType findPiece(definedPieceType piece);
+  boardCoordinateType findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound, Pieces::Identities::eIdentities identityThatIsToBeFound, boardStateMapType& boardStateToUse);
+  boardCoordinateType findPiece(definedPieceType piece, boardStateMapType& boardStateToUse);
   void updateCapturedPieces();
 };
 
