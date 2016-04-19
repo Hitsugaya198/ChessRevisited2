@@ -2,7 +2,7 @@
  * @file   Board.cpp
  * @author Louis Parkin (louis.parkin@stonethree.com)
  * @date   April 2016
- * @brief  This file contains te inner management features of a chess board
+ * @brief  This file contains the inner management features of a Chess Board
  *
  * In this cpp file is housed all the functions and attributes needed to construct and manage a
  * a chess board in three different stages of play; backed up, current, and proposed states.
@@ -33,7 +33,6 @@
 
 #include <QDebug>
 #include <QMessageBox>
-#include <QMutexLocker>
 
 // Static member definitions
 boardStateMapType Board::_workingBoardStateMap  = boardStateMapType();
@@ -108,7 +107,7 @@ void Board::clearHighLights()
 
       Cell* cell = getCell(row, column);
 
-      if (cell != nullptr) {
+      if (cell != NULL) {
 
         cell->highLightCell(false);
       }
@@ -128,7 +127,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
 
   // validate that there is actually a piece there on the board.
   if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eNone ||
-      getCell(fromWhere)->assignedPiece()->color() == Pieces::PieceColors::eNone) {
+      getCell(fromWhere)->assignedPiece()->color() == PieceColors::eNone) {
     getCell(fromWhere)->setChecked(false);
     getCell(fromWhere)->highLightCell(false);
     return;
@@ -146,7 +145,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
     // see if any potential moves can bring the board into a legal state (uncheck the king)
     // first check if the selected cell can attack the offender
 
-    MoveRules::movementType rules = MoveRules::getMovementRules(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
+    movementType rules = MoveRules::getMovementRules(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
     definedPieceType currentPiece = definedPieceType(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
     boardCoordinatesType container = boardCoordinatesType();
 
@@ -165,7 +164,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
                                                       pieceWhoWillBeAttacking,
                                                       pieceWhoWillBeAttacked);
         if (canItBeAttacked) {
-          // Attack the bugger
+          // Attack it
           _locationStart = locationOfAttacker;
           containerForHighlighting = set;
         }
@@ -202,12 +201,12 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
                                                       pieceWhoWillBeAttacking,
                                                       pieceWhoWillBeAttacked);
         if (canItBeAttacked) {
-          // Attack the bugger
+          // Attack it
           _locationStart = locationOfAttacker;
           containerForHighlighting = set;
         }
         else {
-          // try to block his path
+          // Try to block its path
           boardCoordinatesType set = getPath(_locationOfVictim, _locationOfAttacker, _workingBoardStateMap);
           bool pathCanBePotentiallyBlocked = !set.isEmpty();
           if (pathCanBePotentiallyBlocked) {
@@ -230,7 +229,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
       bool canItBeAttacked = !set.isEmpty();
       // If we can attack it directly, there will be a path to it.
       if (canItBeAttacked) {
-        // Attack the bugger
+        // Attack it
         _locationStart = fromWhere;
         containerForHighlighting = set;
       }
@@ -253,7 +252,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
   }
   else {
     // Board is in a valid state (your king is not in danger)
-    MoveRules::movementType rules = MoveRules::getMovementRules(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
+    movementType rules = MoveRules::getMovementRules(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
     definedPieceType currentPiece = definedPieceType(getCell(fromWhere)->assignedPiece()->identity(), getCell(fromWhere)->assignedPiece()->color());
     boardCoordinatesType container = boardCoordinatesType();
 
@@ -477,13 +476,13 @@ void Board::setHumanPlayer(const QSharedPointer<Player>& humanPlayer)
 
 ///
 /// \brief Board::findPiece() finds a piece defined by color and identity (pawn, knight, etc...)
-/// \param colorThatIsToBeFound [in] is the Pieces::PieceColors::ePieceColors value that represents the colour of the piece to be found
+/// \param colorThatIsToBeFound [in] is the PieceColors::ePieceColors value that represents the colour of the piece to be found
 /// \param identityThatIsToBeFound [in] is the Pieces::Identities::eIdentities value that represents the identity of the piece to be found
 /// \param boardStateToUse [in] the board state to search for the piece in question.
 /// \return the coordinate where the piece can be found.
 /// This implementation is a parameter overloaded version of the one that combines identity and color into definedPieceType
 ///
-boardCoordinateType Board::findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound,
+boardCoordinateType Board::findPiece(PieceColors::ePieceColors colorThatIsToBeFound,
                                      Pieces::Identities::eIdentities identityThatIsToBeFound,
                                      boardStateMapType& boardStateToUse)
 {
@@ -514,7 +513,7 @@ boardCoordinateType Board::findPiece(definedPieceType piece, boardStateMapType& 
       definedPieceType currentPiece = boardStateToUse.value(currentCoordinate);
 
       Pieces::Identities::eIdentities currentPieceIdentity = currentPiece.first;
-      Pieces::PieceColors::ePieceColors currentPieceColor = currentPiece.second;
+      PieceColors::ePieceColors currentPieceColor = currentPiece.second;
 
       if (currentPieceIdentity == Pieces::Identities::eNone) {
         // No piece on this cell
@@ -567,7 +566,7 @@ boardCoordinatesType Board::findPieces(definedPieceType piece, boardStateMapType
       definedPieceType currentPiece = _workingBoardStateMap.value(currentCoordinate);
 
       Pieces::Identities::eIdentities currentPieceIdentity = currentPiece.first;
-      Pieces::PieceColors::ePieceColors currentPieceColor = currentPiece.second;
+      PieceColors::ePieceColors currentPieceColor = currentPiece.second;
 
       if (currentPieceIdentity == Pieces::Identities::eNone) {
         // No piece on this cell
@@ -770,13 +769,8 @@ boardCoordinatesType Board::getPath(boardCoordinateType pointA, boardCoordinateT
 bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 {
   boardCoordinatesType container;
-  Pieces::PieceColors::ePieceColors color;
-  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
-    color = Pieces::PieceColors::eWhite;
-  }
-  else {
-    color = Pieces::PieceColors::eBlack;
-  }
+  PieceColors::ePieceColors color;
+  color = TurnManager::currentPlayer()->associatedColor();
 
   boardCoordinateType locationOfAttacker;
   boardCoordinateType locationOfVictim;
@@ -810,7 +804,7 @@ bool Board::evaluateBoardState(boardStateMapType& boardStateToEvaluate)
 /// \param pieceWhoWillBeAttacked [out] the definedPieceType value of the victim.
 /// \return true if the target can be reached, false if it cannot.
 ///
-bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
+bool Board::isTheTargetWithinRange(PieceColors::ePieceColors colorThatIsToBeAttacked,
                                    Pieces::Identities::eIdentities identityThatIsToBeAttacked,
                                    boardCoordinatesType& container,
                                    boardStateMapType& boardStateToUse,
@@ -819,7 +813,7 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
                                    definedPieceType& pieceWhoWillBeAttacking,
                                    definedPieceType& pieceWhoWillBeAttacked)
 {
-  Pieces::PieceColors::ePieceColors attackerColor = Pieces::flipColor(colorThatIsToBeAttacked);
+  PieceColors::ePieceColors attackerColor = PieceColors::flipColor(colorThatIsToBeAttacked);
   boardCoordinatesType targetsLocation;
   boardCoordinateType targetLocation = boardCoordinateType(0, 0);
 
@@ -846,7 +840,7 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
         definedPieceType currentPiece = boardStateToUse.value(currentCoordinate);
 
         Pieces::Identities::eIdentities currentPieceIdentity = currentPiece.first;
-        Pieces::PieceColors::ePieceColors currentPieceColor = currentPiece.second;
+        PieceColors::ePieceColors currentPieceColor = currentPiece.second;
 
         if (currentPieceIdentity == Pieces::Identities::eNone) {
           // No piece on this cell
@@ -857,7 +851,7 @@ bool Board::isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIs
           continue;
         }
         // It is a piece, it is the right color.  Map it's moves
-        MoveRules::movementType rules = MoveRules::getMovementRules(currentPieceIdentity, currentPieceColor);
+        movementType rules = MoveRules::getMovementRules(currentPieceIdentity, currentPieceColor);
 
         mapMoves(rules, currentPiece, container, currentCoordinate, boardStateToUse);
         definedPieceType pieceToAttack = definedPieceType(identityThatIsToBeAttacked,
@@ -948,7 +942,7 @@ void Board::movePieceRevertMove(boardStateMapType& scenario, piecesListType& sce
 /// \param location [in] the starting location of the piece in question.
 /// \param stateMapToUse [in] is the map used to determine possible moves when calling isMoveLegal().
 ///
-void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& stateMapToUse)
+void Board::mapMoves(movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& stateMapToUse)
 {
   bool lessLinearMoveRequired = false;
 
@@ -959,12 +953,12 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
   int startRow = location.first;
   int startColumn = location.second;
 
-  MoveRules::directionsType moveDirections = rules.first;
-  MoveRules::magnitudesType moveMagnitudes = rules.second;
-  MoveRules::directionType firstMoveDirections = moveDirections.first;
-  //  MoveRules::directionType secondMoveDirections = moveDirections.second;
-  MoveRules::magnitudeType firstMagnitude = moveMagnitudes.first;
-  MoveRules::magnitudeType secondMagnitude = moveMagnitudes.second;
+  directionsType moveDirections = rules.first;
+  magnitudesType moveMagnitudes = rules.second;
+  directionType firstMoveDirections = moveDirections.first;
+  //  directionType secondMoveDirections = moveDirections.second;
+  magnitudeType firstMagnitude = moveMagnitudes.first;
+  magnitudeType secondMagnitude = moveMagnitudes.second;
 
   // firstMoveDirections are for all pieces
   // secondMoveDirections are only for Knights
@@ -976,35 +970,35 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
   }
 
   if (piece.first == Pieces::Identities::ePawn) {
-    if (piece.second == Pieces::PieceColors::eBlack) {
+    if (piece.second == PieceColors::eBlack) {
       if (location.first > 2) {
-        secondMagnitude = 1;
+        secondMagnitude = Magnitude::eOne;
       }
       else {
-        secondMagnitude = 2;
+        secondMagnitude = Magnitude::eTwo;
       }
     }
     else {
       if (location.first < 7) {
-        secondMagnitude = 1;
+        secondMagnitude = Magnitude::eOne;
       }
       else {
-        secondMagnitude = 2;
+        secondMagnitude = Magnitude::eTwo;
       }
     }
   }
 
   if (!lessLinearMoveRequired) {
 
-    MoveRules::directionType::iterator i = firstMoveDirections.begin();
+    directionType::iterator i = firstMoveDirections.begin();
 
     while (i != firstMoveDirections.end()) {
 
-      MoveRules::Direction::eDirectionRules temp = *i;
+      Direction::eDirectionRules temp = *i;
       ++i;
 
       switch (temp) {
-      case MoveRules::Direction::eMayMoveNorth      : {
+      case Direction::eMayMoveNorth      : {
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startRow - x >= 1) {
             boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn);
@@ -1016,7 +1010,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
         }
         break;
       }
-      case MoveRules::Direction::eMayMoveNorthEast  :
+      case Direction::eMayMoveNorthEast  :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startRow - x >= 1 && startColumn + x <= 8) {
             boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn + x);
@@ -1027,7 +1021,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           }
         }
         break;
-      case MoveRules::Direction::eMayMoveEast       :
+      case Direction::eMayMoveEast       :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startColumn + x <= 8) {
             boardCoordinateType coord = boardCoordinateType(startRow, startColumn + x);
@@ -1038,7 +1032,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           }
         }
         break;
-      case MoveRules::Direction::eMayMoveSouthEast  :
+      case Direction::eMayMoveSouthEast  :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startRow + x <= 8 && startColumn + x <= 8) {
             boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn + x);
@@ -1049,7 +1043,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           }
         }
         break;
-      case MoveRules::Direction::eMayMoveSouth      :
+      case Direction::eMayMoveSouth      :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startRow + x <= 8) {
             boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn);
@@ -1060,7 +1054,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           }
         }
         break;
-      case MoveRules::Direction::eMayMoveSouthWest  :
+      case Direction::eMayMoveSouthWest  :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startRow + x <= 8 && startColumn - x >= 1) {
             boardCoordinateType coord = boardCoordinateType(startRow + x, startColumn - x);
@@ -1071,7 +1065,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           }
         }
         break;
-      case MoveRules::Direction::eMayMoveWest       :
+      case Direction::eMayMoveWest       :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startColumn - x >= 1) {
             boardCoordinateType coord = boardCoordinateType(startRow, startColumn - x);
@@ -1082,7 +1076,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           }
         }
         break;
-      case MoveRules::Direction::eMayMoveNorthWest  :
+      case Direction::eMayMoveNorthWest  :
         for (int x = firstMagnitude; x <= secondMagnitude; ++x) {
           if (startRow - x >= 1 && startColumn - x >= 1) {
             boardCoordinateType coord = boardCoordinateType(startRow - x, startColumn - x);
@@ -1098,15 +1092,15 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
   }
   else { // This is a knight, he doesn't move quite as linear as the other pieces.
 
-    MoveRules::directionType::iterator i = firstMoveDirections.begin();
+    directionType::iterator i = firstMoveDirections.begin();
 
     while (i != firstMoveDirections.end()) {
 
-      MoveRules::Direction::eDirectionRules temp = *i;
+      Direction::eDirectionRules temp = *i;
       ++i;
 
       switch (temp) {
-      case MoveRules::Direction::eMayMoveNorthEast  :
+      case Direction::eMayMoveNorthEast  :
         // Knight can move 2 East and 1 North
         if (startRow - 1 >= 1 && startColumn + 2 <= 8) {
           boardCoordinateType coord = boardCoordinateType(startRow - 1, startColumn + 2);
@@ -1118,7 +1112,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           container.insert(coord);
         }
         break;
-      case MoveRules::Direction::eMayMoveSouthEast  :
+      case Direction::eMayMoveSouthEast  :
         // Knight can move 2 East and 1 South
         if (startRow + 1 <= 8 && startColumn + 2 <= 8) {
           boardCoordinateType coord = boardCoordinateType(startRow + 1, startColumn + 2);
@@ -1130,7 +1124,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           container.insert(coord);
         }
         break;
-      case MoveRules::Direction::eMayMoveSouthWest  :
+      case Direction::eMayMoveSouthWest  :
         // Knight can move 2 West and 1 South
         if (startRow + 1 <= 8 && startColumn - 2 >= 1) {
           boardCoordinateType coord = boardCoordinateType(startRow + 1, startColumn - 2);
@@ -1142,7 +1136,7 @@ void Board::mapMoves(MoveRules::movementType rules, definedPieceType piece, boar
           container.insert(coord);
         }
         break;
-      case MoveRules::Direction::eMayMoveNorthWest  :
+      case Direction::eMayMoveNorthWest  :
         // Knight can move 2 West and 1 North
         if (startRow - 1 >= 1 && startColumn - 2 >= 1) {
           boardCoordinateType coord = boardCoordinateType(startRow - 1, startColumn - 2);
@@ -1187,8 +1181,8 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom,
                         boardCoordinatesType& containerToUse,
                         boardStateMapType& stateMapToUse)
 {
-  Pieces::PieceColors::ePieceColors fromColor = stateMapToUse.value(moveFrom).second;
-  Pieces::PieceColors::ePieceColors toColor = stateMapToUse.value(moveTo).second;
+  PieceColors::ePieceColors fromColor = stateMapToUse.value(moveFrom).second;
+  PieceColors::ePieceColors toColor = stateMapToUse.value(moveTo).second;
 
   if (containerToUse.isEmpty()) {
     return false; // No possible moves for selected piece.
@@ -1226,19 +1220,19 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom,
         }
 
         // Check that the move is 'forward'
-        if (fromColor == Pieces::PieceColors::eBlack && row1 > row2) {
+        if (fromColor == PieceColors::eBlack && row1 > row2) {
           return false;
         }
 
-        if (fromColor == Pieces::PieceColors::eWhite && row1 < row2) {
+        if (fromColor == PieceColors::eWhite && row1 < row2) {
           return false;
         }
 
         // Tried to move sideways (attack), but no enemy on that cell.  Will not be allowed.
-        if (fromColor == Pieces::PieceColors::eBlack && toColor != Pieces::PieceColors::eWhite) {
+        if (fromColor == PieceColors::eBlack && toColor != PieceColors::eWhite) {
           return false;
         }
-        else if (fromColor == Pieces::PieceColors::eWhite && toColor != Pieces::PieceColors::eBlack) {
+        else if (fromColor == PieceColors::eWhite && toColor != PieceColors::eBlack) {
           return false;
         }
         else {
@@ -1247,7 +1241,7 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom,
       }
       else {  // Straight move, can only attack sideways, so if destination cell contains
         // an enemy piece, thwart it
-        if (toColor != Pieces::PieceColors::eNone) {
+        if (toColor != PieceColors::eNone) {
           return false;
         }
 
@@ -1260,11 +1254,11 @@ bool Board::isMoveLegal(boardCoordinateType moveFrom,
         }
 
         // Check that the move is 'forward'
-        if (fromColor == Pieces::PieceColors::eBlack && row1 > row2) {
+        if (fromColor == PieceColors::eBlack && row1 > row2) {
           return false;
         }
 
-        if (fromColor == Pieces::PieceColors::eWhite && row1 < row2) {
+        if (fromColor == PieceColors::eWhite && row1 < row2) {
           return false;
         }
 
@@ -1479,7 +1473,7 @@ void Board::uncheckAllCheckedCells()
 
       Cell* cell = getCell(row, column);
 
-      if (cell != nullptr) {
+      if (cell != NULL) {
         if (cell->isChecked()) {
           cell->blockSignals(true);
           cell->setChecked(false);
@@ -1541,7 +1535,7 @@ void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
 
       Cell* cell = getCell(row, column);
 
-      if (cell != nullptr) {
+      if (cell != NULL) {
 
         if (forTheFirstTime) {
           // What to connect these cells to?
@@ -1572,7 +1566,7 @@ void Board::resetBoard(bool forTheFirstTime, bool styleOnly)
 Cell* Board::getCell(int row, int column) const
 {
   QGridLayout* parentLayout = ui->gridLayout;
-  Cell* theRealCell = nullptr;
+  Cell* theRealCell = NULL;
 
   QLayoutItem* theCell;
   theCell = parentLayout->itemAtPosition(row, column);
@@ -1623,23 +1617,23 @@ void Board::createStartupMap(boardStateMapType& mapToInitialize)
         }
 
         if (row == ePawnsTopRow || row == ePawnsBottomRow) { // This will be all pawns.  Assume player always plays with white
-          Pieces::PieceColors::ePieceColors pieceColor;
+          PieceColors::ePieceColors pieceColor;
           if (row == ePawnsTopRow) {
-            pieceColor = Pieces::PieceColors::eBlack;
+            pieceColor = PieceColors::eBlack;
           }
           else {
-            pieceColor = Pieces::PieceColors::eWhite;
+            pieceColor = PieceColors::eWhite;
           }
           mapToInitialize.insert(boardCoordinateType(row, column), definedPieceType(Pieces::Identities::ePawn, pieceColor));
         }
 
         if (row == eOtherTopRow || row == eOtherBottomRow) { // This is where all the more important enemy pieces start
-          Pieces::PieceColors::ePieceColors pieceColor;
+          PieceColors::ePieceColors pieceColor;
           if (row == eOtherTopRow) {
-            pieceColor = Pieces::PieceColors::eBlack;
+            pieceColor = PieceColors::eBlack;
           }
           else {
-            pieceColor = Pieces::PieceColors::eWhite;
+            pieceColor = PieceColors::eWhite;
           }
           switch (column) {
           case eCastleLeftColumn:

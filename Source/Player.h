@@ -3,6 +3,7 @@
 
 #include "UserIdentity.h"
 #include "Pieces.h"
+#include "Colors.h"
 
 #include <QObject>
 
@@ -11,11 +12,11 @@ class Player : public QObject
   Q_OBJECT
 public:
   explicit Player(QObject* parent = 0);
-  explicit Player(UserIdentity::eIdentities identity, Pieces::PieceColors::ePieceColors color, QObject* parent = 0);
+  explicit Player(UserIdentity::eIdentities identity, PieceColors::ePieceColors color, QObject* parent = 0);
   virtual ~Player();
 
   UserIdentity::eIdentities identity() const;
-  Pieces::PieceColors::ePieceColors associatedColor() const;
+  PieceColors::ePieceColors associatedColor() const;
 
   signals:
 
@@ -23,7 +24,7 @@ public:
 
   private:
   UserIdentity::eIdentities _identity;
-  Pieces::PieceColors::ePieceColors _associatedColor;
+  PieceColors::ePieceColors _associatedColor;
 };
 
 #endif // PLAYER_H

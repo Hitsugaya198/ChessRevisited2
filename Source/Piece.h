@@ -12,7 +12,7 @@ class Piece : public QObject
   Q_OBJECT
 public:
   typedef Pieces::Identities::eIdentities eIdentities;
-  typedef Pieces::PieceColors::ePieceColors ePieceColors;
+  typedef PieceColors::ePieceColors ePieceColors;
 
   explicit Piece(QObject* parent = 0);
   explicit Piece(eIdentities identity, ePieceColors pieceColor, QObject* parent = 0);
@@ -24,7 +24,7 @@ public:
   ePieceColors color() const;
   void setColor(const ePieceColors& color);
   ePieceColors enemyColor() const;
-  static ePieceColors enemyColor(Pieces::PieceColors::ePieceColors colorInput);
+  static ePieceColors enemyColor(PieceColors::ePieceColors colorInput);
 
   void generatePixmap();
   const QPixmap& getPixmap() const;

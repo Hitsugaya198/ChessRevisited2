@@ -1,18 +1,45 @@
+/**
+ * @file   MoveMapper.cpp
+ * @author Louis Parkin (louis.parkin@stonethree.com)
+ * @date   April 2016
+ * @brief  This file contains the inner management features of the MoveMapper class
+ *
+ * In this cpp file is housed all the functions and attributes needed to determine
+ * whether a player has any availble moves at his disposal.
+ */
+
 #include "MoveMapper.h"
 
 #include "Cell.h"
 #include "Piece.h"
 
+///
+/// \brief MoveMapper::MoveMapper is the default constructor for the MoveMapper type
+/// \param parent is the QObject that will eventually destroy the pointer to MoveMapper (if not null).
+///
 MoveMapper::MoveMapper(QObject* parent) : QObject(parent)
 {
 
 }
 
+///
+/// \brief MoveMapper::~MoveMapper is the default destructor for MoveMapper objects
+///
 MoveMapper::~MoveMapper()
 {
 
 }
 
+///
+/// \brief MoveMapper::doesPlayerHaveAvailableMoves calculates every possible move of every piece for a given player.
+/// \param whichPlayer is the player that the calculation will be done for.
+/// \param containerOfAvailableMoves [in,out] is the container of moves available, post analysis.
+/// \param kingChecked [out] is a boolean that indicates whether the player referenced by whichPlayer's king is checked.
+/// \param locationStart [out] is a boardCoordinateType that tells you the location of the piece whose valid moves are in containerOfAvailableMoves.
+/// \param reverseIterate is a boolean that indicates whether containers will be accessed from the back or the front.
+/// \param priorityForAttack is a boolean that indicates whether or not priority should be given to attack enemy pieces.
+/// \return true if moves are available, false if no moves are available to the player.
+///
 bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlayer,
                                               boardCoordinatesType& containerOfAvailableMoves,
                                               bool* kingChecked,
@@ -70,7 +97,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
       // first see if the selected cell can attack the offender, unless it is the king, and he is further
       // than one cell away.
 
-      MoveRules::movementType rules = MoveRules::getMovementRules(currentPiece.first, currentPiece.second);
+      movementType rules = MoveRules::getMovementRules(currentPiece.first, currentPiece.second);
       boardCoordinatesType container = boardCoordinatesType();
 
       // Map it's possible moves.  _theGameBoard->mapMoves() only returns "legal" moves
@@ -78,7 +105,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
 
       if (!container.isEmpty()) {
         boardCoordinatesType set;
-        bool canItBeAttacked = _theGameBoard->isTheTargetWithinRange(Pieces::flipColor(whichPlayer->associatedColor()),
+        bool canItBeAttacked = _theGameBoard->isTheTargetWithinRange(PieceColors::flipColor(whichPlayer->associatedColor()),
                                                                      _theGameBoard->pieceWhoWillBeAttacking().first,
                                                                      set,
                                                                      currentStateOfTheGameBoard,
@@ -87,7 +114,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
                                                                      pieceWhoWillBeAttacking,
                                                                      pieceWhoWillBeAttacked);
         if (canItBeAttacked) {
-          // Attack the bugger from anywhere
+          // Attack it from anywhere
 
           // But first make sure it is not going to result in a broken board state
           Cell* from = _theGameBoard->getCell(locationOfAttacker);
@@ -112,11 +139,8 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
           }
         }
         else {
-          // try to block his path
+          // Try to block its path
           boardCoordinatesType set = _theGameBoard->getPath(_theGameBoard->locationOfVictim(), _theGameBoard->locationOfAttacker(), currentStateOfTheGameBoard);
-//          bool pathCanBePotentiallyBlocked = !set.isEmpty();
-//          if (pathCanBePotentiallyBlocked) {
-
           boardCoordinatesType possibleMoves;
           if (currentPiece.first == Pieces::Identities::eKing) {
             // If the current piece is the king, and we cannot attack, we must run away
@@ -162,13 +186,12 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
           else {
             // Selected piece has no available moves.
           }
-//          }
         }
       }
     }
     else {
       // Board is in a valid state (your king is not in danger)
-      MoveRules::movementType rules = MoveRules::getMovementRules(currentPiece.first, currentPiece.second);
+      movementType rules = MoveRules::getMovementRules(currentPiece.first, currentPiece.second);
       boardCoordinatesType container = boardCoordinatesType();
 
       // Map it's possible moves.  _theGameBoard->mapMoves() only returns "legal" moves
@@ -187,7 +210,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
           // if there is a priority to attack first, then the end result
           // should only contain moves with targets
           if (priorityForAttack) {
-            if (to->assignedPiece()->color() != Pieces::flipColor(whichPlayer->associatedColor())) {
+            if (to->assignedPiece()->color() != PieceColors::flipColor(whichPlayer->associatedColor())) {
               // not an enemy piece, so not an attack...
               container.remove(toWhere);
               containerIterator = container.begin();
@@ -232,11 +255,19 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
   return false;
 }
 
+///
+/// \brief MoveMapper::associatedGameBoard is an accessor method to the Board pointer currently assiated with this instance of MoveMapper
+/// \return a pointer to the associated Board.
+///
 Board* MoveMapper::associatedGameBoard() const
 {
   return _theGameBoard;
 }
 
+///
+/// \brief MoveMapper::associateGameBoard is a mutator method to manipulate the the associate game Board pointer.
+/// \param associatedGameBoard is the new pointer to store as the associated game Board.
+///
 void MoveMapper::associateGameBoard(Board* associatedGameBoard)
 {
   _theGameBoard = associatedGameBoard;

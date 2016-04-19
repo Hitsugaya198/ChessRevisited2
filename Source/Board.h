@@ -1,3 +1,10 @@
+/**
+ * @file   Board.h
+ * @author Louis Parkin (louis.parkin@stonethree.com)
+ * @date   April 2016
+ * @brief  This file contains the inner class and member definitions of the Board class
+ */
+
 #ifndef BOARD_H
 #define BOARD_H
 
@@ -5,61 +12,15 @@
 #include "UserIdentity.h"
 #include "MoveRules.h"
 #include "Player.h"
+#include "CommonTypeDefinitions.h"
 
 #include <QWidget>
-#include <QMap>
-#include <QPair>
-#include <QSet>
-#include <QMutex>
 
 class Cell;
 
 namespace Ui
 {
   class Board;
-}
-
-namespace    //anonymous
-{
-  /**
-   * @brief rowType just an integer used as the row indicator of a coordinate
-   */
-  typedef int rowType;
-
-  /**
-   * @brief columnType just an integer used as the column indicator of a coordinate
-   */
-  typedef int columnType;
-
-  /**
-   * @brief boardCoordinateType combined rowType and columnType into a complex type (QPair)
-   */
-  typedef QPair < rowType, columnType > boardCoordinateType;
-
-  /**
-   * @brief boardCoordinatesType a collection of boardCoordinateType values in a QSet
-   */
-  typedef QSet < boardCoordinateType > boardCoordinatesType;
-
-  /**
-   * @brief definedPieceType combines the attributes of a piece into a single type.
-   */
-  typedef QPair < Pieces::Identities::eIdentities, Pieces::PieceColors::ePieceColors > definedPieceType;
-
-  /**
-   * @brief boardStateMapType the state of a board is mapped as all the playable pieces and their locations
-   */
-  typedef QMap < boardCoordinateType, definedPieceType > boardStateMapType;
-
-  /**
-   * @brief boardStateMapIteratorType is an iterator type for QMap. Useful for reverse-iteration.
-   */
-  typedef QMapIterator < boardCoordinateType, definedPieceType > boardStateMapIteratorType;
-
-  /**
-   * @brief piecesListType a list of pieces, used to document captured pieces
-   */
-  typedef QList < definedPieceType > piecesListType;
 }
 
 /**
@@ -158,7 +119,7 @@ public:
    * @param param location [in] the starting location of the piece in question.
    * @param param stateMapToUse [in] is the map used to determine possible moves when calling isMoveLegal().
    */
-  void mapMoves(MoveRules::movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& stateMapToUse);
+  void mapMoves(movementType rules, definedPieceType piece, boardCoordinatesType& container, boardCoordinateType location, boardStateMapType& stateMapToUse);
 
   /**
    * @brief findPieces() is a replacement for the two findPiece functions.
@@ -312,7 +273,7 @@ public:
    * @param pieceWhoWillBeAttacked [out] the definedPieceType value of the victim.
    * @return true if the target can be reached, false if it cannot.
    */
-  bool isTheTargetWithinRange(Pieces::PieceColors::ePieceColors colorThatIsToBeAttacked,
+  bool isTheTargetWithinRange(PieceColors::ePieceColors colorThatIsToBeAttacked,
                               Pieces::Identities::eIdentities identityThatIsToBeAttacked,
                               boardCoordinatesType& container,
                               boardStateMapType& boardStateToUse,
@@ -555,12 +516,12 @@ private:
 
   /**
    * @brief findPiece() finds a piece defined by color and identity (pawn, knight, etc...)
-   * @param colorThatIsToBeFound [in] is the Pieces::PieceColors::ePieceColors value that represents the colour of the piece to be found
+   * @param colorThatIsToBeFound [in] is the PieceColors::ePieceColors value that represents the colour of the piece to be found
    * @param identityThatIsToBeFound [in] is the Pieces::Identities::eIdentities value that represents the identity of the piece to be found
    * @param boardStateToUse [in] the board state to search for the piece in question.
    * @return the coordinate where the piece can be found.
    */
-  boardCoordinateType findPiece(Pieces::PieceColors::ePieceColors colorThatIsToBeFound,
+  boardCoordinateType findPiece(PieceColors::ePieceColors colorThatIsToBeFound,
                                 Pieces::Identities::eIdentities identityThatIsToBeFound,
                                 boardStateMapType& boardStateToUse);
 

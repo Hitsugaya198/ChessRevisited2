@@ -23,7 +23,8 @@ MoveRules::~MoveRules()
 /// \param pieceColor
 /// \return
 ///
-MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePieceColors pieceColor)
+movementType MoveRules::getMovementRules(Pieces::Identities::eIdentities identity,
+                                         PieceColors::ePieceColors pieceColor)
 {
   magnitudesType magnitudes;
   magnitudeType magnitude1;
@@ -35,7 +36,7 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
 
   switch (identity) {
   case Pieces::Identities::ePawn   : {
-    if (pieceColor == Pieces::PieceColors::eBlack) { // Plays north to south
+    if (pieceColor == PieceColors::eBlack) { // Plays north to south
       direction1.insert(Direction::eMayMoveSouth);
       direction1.insert(Direction::eMayMoveSouthEast);
       direction1.insert(Direction::eMayMoveSouthWest);
@@ -46,8 +47,8 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
       direction1.insert(Direction::eMayMoveNorthWest);
     }
 
-    magnitude1 = 1;
-    magnitude2 = 2; // Special Case: Only from starting position
+    magnitude1 = Magnitude::eOne;
+    magnitude2 = Magnitude::eTwo; // Special Case: Only from starting position
     break;
   }
   case Pieces::Identities::eBishop : {
@@ -56,8 +57,8 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
     direction1.insert(Direction::eMayMoveNorthWest);
     direction1.insert(Direction::eMayMoveSouthEast);
     direction1.insert(Direction::eMayMoveSouthWest);
-    magnitude1 = 1;
-    magnitude2 = 8;
+    magnitude1 = Magnitude::eOne;
+    magnitude2 = Magnitude::eEight;
     break;
   }
   case Pieces::Identities::eCastle : {
@@ -66,8 +67,8 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
     direction1.insert(Direction::eMayMoveWest);
     direction1.insert(Direction::eMayMoveEast);
     direction1.insert(Direction::eMayMoveSouth);
-    magnitude1 = 1;
-    magnitude2 = 8;
+    magnitude1 = Magnitude::eOne;
+    magnitude2 = Magnitude::eEight;
     break;
   }
   case Pieces::Identities::eKing   : {
@@ -80,8 +81,8 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
     direction1.insert(Direction::eMayMoveNorthWest);
     direction1.insert(Direction::eMayMoveSouthEast);
     direction1.insert(Direction::eMayMoveSouthWest);
-    magnitude1 = 1;
-    magnitude2 = 1;
+    magnitude1 = Magnitude::eOne;
+    magnitude2 = Magnitude::eOne;
     break;
   }
   case Pieces::Identities::eKnight : {
@@ -89,8 +90,8 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
     direction1.insert(Direction::eMayMoveNorthWest);
     direction1.insert(Direction::eMayMoveSouthEast);
     direction1.insert(Direction::eMayMoveSouthWest);
-    magnitude1 = 3;
-    magnitude2 = 3;
+    magnitude1 = Magnitude::eThree;
+    magnitude2 = Magnitude::eThree;
     break;
     // This one is going to be tricky, as the magnitudes are interchangeable
   }
@@ -104,8 +105,8 @@ MoveRules::movementType MoveRules::getMovementRules(eIdentities identity, ePiece
     direction1.insert(Direction::eMayMoveNorthWest);
     direction1.insert(Direction::eMayMoveSouthEast);
     direction1.insert(Direction::eMayMoveSouthWest);
-    magnitude1 = 1;
-    magnitude2 = 8;
+    magnitude1 = Magnitude::eOne;
+    magnitude2 = Magnitude::eEight;
     break;
   }
   }

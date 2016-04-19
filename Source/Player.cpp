@@ -8,7 +8,7 @@ Player::Player(QObject* parent) :
   QObject(parent)
 {
   _identity = UserIdentity::eNone;
-  _associatedColor = Pieces::PieceColors::eNone;
+  _associatedColor = PieceColors::eNone;
 }
 
 ///
@@ -16,7 +16,7 @@ Player::Player(QObject* parent) :
 /// \param identity
 /// \param parent
 ///
-Player::Player(UserIdentity::eIdentities identity, Pieces::PieceColors::ePieceColors color, QObject* parent) :
+Player::Player(UserIdentity::eIdentities identity, PieceColors::ePieceColors color, QObject* parent) :
   QObject(parent)
 {
   _identity = identity;
@@ -44,7 +44,7 @@ UserIdentity::eIdentities Player::identity() const
 /// \brief Player::associatedColor
 /// \return
 ///
-Pieces::PieceColors::ePieceColors Player::associatedColor() const
+PieceColors::ePieceColors Player::associatedColor() const
 {
     return _associatedColor;
 }

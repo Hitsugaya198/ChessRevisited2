@@ -8,7 +8,7 @@
 Piece::Piece(QObject* parent) : QObject(parent)
 {
   setIdentity(Pieces::Identities::eNone);
-  setColor(Pieces::PieceColors::eNone);
+  setColor(PieceColors::eNone);
   generatePixmap();
 }
 
@@ -55,7 +55,7 @@ void Piece::setIdentity(const eIdentities& identity)
 /// \brief Piece::color
 /// \return
 ///
-Pieces::PieceColors::ePieceColors Piece::color() const
+PieceColors::ePieceColors Piece::color() const
 {
   return _color;
 }
@@ -75,11 +75,11 @@ void Piece::setColor(const ePieceColors& color)
 ///
 Piece::ePieceColors Piece::enemyColor() const
 {
-  if (color() == Pieces::PieceColors::eWhite) {
-    return Pieces::PieceColors::eBlack;
+  if (color() == PieceColors::eWhite) {
+    return PieceColors::eBlack;
   }
   else {
-    return Pieces::PieceColors::eWhite;
+    return PieceColors::eWhite;
   }
 }
 
@@ -88,13 +88,13 @@ Piece::ePieceColors Piece::enemyColor() const
 /// \param colorInput
 /// \return
 ///
-Piece::ePieceColors Piece::enemyColor(Pieces::PieceColors::ePieceColors colorInput)
+Piece::ePieceColors Piece::enemyColor(PieceColors::ePieceColors colorInput)
 {
-  if (colorInput == Pieces::PieceColors::eWhite) {
-    return Pieces::PieceColors::eBlack;
+  if (colorInput == PieceColors::eWhite) {
+    return PieceColors::eBlack;
   }
   else {
-    return Pieces::PieceColors::eWhite;
+    return PieceColors::eWhite;
   }
 }
 
@@ -103,14 +103,14 @@ Piece::ePieceColors Piece::enemyColor(Pieces::PieceColors::ePieceColors colorInp
 ///
 void Piece::generatePixmap()
 {
-  if (this->color() == Pieces::PieceColors::eNone) {
+  if (this->color() == PieceColors::eNone) {
     return;
   }
   if (this->identity() == Pieces::Identities::eNone) {
     return;
   }
 
-  QString colorString = Pieces::getInstance().colorNames().at(this->color());
+  QString colorString = PieceColors::getInstance().colorNames().at(this->color());
   QString identityString = Pieces::getInstance().identityNames().at(this->identity());
   QString resPath = QString(":/Pieces/") + QString("Resources/") + colorString + QString("/") + identityString + QString(".png");
 

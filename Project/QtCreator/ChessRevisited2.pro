@@ -46,7 +46,10 @@ HEADERS  += \
     ../../Source/PixmapWidget.h \
     ../../Source/CapturedPieceWidget.h \
     ../../Source/AppFilter.h \
-    ../../Source/MoveMapper.h
+    ../../Source/MoveMapper.h \
+    ../../Source/CommonTypeDefinitions.h \
+    ../../Source/Direction.h \
+    ../../Source/Magnitude.h
 
 FORMS    += ../../Source/Chess.ui \
             ../../Source/Board.ui \

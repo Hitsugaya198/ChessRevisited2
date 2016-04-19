@@ -1,3 +1,15 @@
+/**
+ * @file   Chess.cpp
+ * @author Louis Parkin (louis.parkin@stonethree.com)
+ * @date   April 2016
+ * @brief  This file contains the inner management features of Chess game
+ *
+ * In this cpp file is housed all the functions and attributes needed to construct and manage a
+ * a Chess game.
+ *
+ * Chess connects the various elements of the game together, and manages the graphical aspects of the application.
+ */
+
 #include "Chess.h"
 #include "ui_Chess.h"
 
@@ -9,14 +21,23 @@
 #include <QMessageBox>
 
 ///
-/// \brief Chess::Chess
-/// \param parent
+/// \brief Chess::Chess() is the default constructor for the MainWindow of the application.
+/// \param parent is always zero for this class, as it is the main entry point of the application.
+/// \code
+///   Chess w;
+///   w.show();
+/// \endcode
+///
+/// This construct also initializes the user interface class Ui::Chess, as well as the Player
+/// entities that will take part in the game.
+///
+/// To manage the AI Player, an instance of MoveGenerator is also created.
 ///
 Chess::Chess(QWidget* parent) :
   QMainWindow(parent),
   ui(new Ui::Chess),
-  _humanPlayer(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite)),
-  _aiPlayer(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack)),
+  _humanPlayer(new Player(UserIdentity::eHuman, PieceColors::eWhite)),
+  _aiPlayer(new Player(UserIdentity::eComputer, PieceColors::eBlack)),
   _artificialIntelligence(new MoveGenerator())
 {
   ui->setupUi(this);
@@ -45,17 +66,19 @@ Chess::Chess(QWidget* parent) :
   connect(ui->_theGameBoard, SIGNAL(updateCapturedPiecesSignal()),
           this, SLOT(updateCapturedPieces()));
 
+  // Allows the game to end.
   connect(&TurnManager::getInstance(), SIGNAL(endGame(bool)),
           this, SLOT(endGame(bool)));
 
+  /* --------- Setup Captured Pieces Display area --------- */
   _blackScrollArea = new QScrollArea(ui->_blackPiecesArea);
   _whiteScrollArea = new QScrollArea(ui->_whitePiecesArea);
 
-  _blackScrollArea->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
-  _whiteScrollArea->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+  _blackScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  _whiteScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-  _blackScrollArea->setWidgetResizable( true );
-  _whiteScrollArea->setWidgetResizable( true );
+  _blackScrollArea->setWidgetResizable(true);
+  _whiteScrollArea->setWidgetResizable(true);
 
   _blackContainer = new QWidget(_blackScrollArea);
   _whiteContainer = new QWidget(_whiteScrollArea);
@@ -74,12 +97,14 @@ Chess::Chess(QWidget* parent) :
 
   lay = ui->_whitePiecesArea->layout();
   lay->addWidget(_whiteScrollArea);
+  /* ------------------------------------------------------ */
 
-  on_action_New_Game_triggered();
+  // Assuming this is why the application was launched...
+  startNewGame();
 }
 
 ///
-/// \brief Chess::~Chess
+/// \brief Chess::~Chess() is the default destructor of Chess objects
 ///
 Chess::~Chess()
 {
@@ -87,21 +112,15 @@ Chess::~Chess()
 }
 
 ///
-/// \brief Chess::on_action_New_Game_triggered
+/// \brief Chess::on_action_New_Game_triggered() is the Ui-generated slot for the "New Game" menu option.
 ///
 void Chess::on_action_New_Game_triggered()
 {
-  ui->_theGameBoard->resetBoard(false, false);
-  _humanPlayer.reset(new Player(UserIdentity::eHuman, Pieces::PieceColors::eWhite));
-  _aiPlayer.reset(new Player(UserIdentity::eComputer, Pieces::PieceColors::eBlack));
-  ui->_theGameBoard->setEnabled(true);
-  ui->_theGameBoard->setHumanPlayer(_humanPlayer);
-  ui->_theGameBoard->setAiPlayer(_aiPlayer);
-  TurnManager::getInstance().switchPlayers(_humanPlayer);
+  startNewGame();
 }
 
 ///
-/// \brief Chess::on_actionE_xit_triggered
+/// \brief Chess::on_actionE_xit_triggered() is the Ui-generated slot for the "Exit" menu option.
 ///
 void Chess::on_actionE_xit_triggered()
 {
@@ -109,16 +128,31 @@ void Chess::on_actionE_xit_triggered()
 }
 
 ///
-/// \brief Chess::startNewGame
+/// \brief Chess::startNewGame() does as its name suggests.
+///
+/// To start a new game, the board has to be reset, the players are recreated,
+/// the game Board is re-enabled, as endGame() disables it, the players are shared with
+/// the Board instance, and finally, the TurnManager is informed it is now the human
+/// player's turn.
 ///
 void Chess::startNewGame()
 {
-
+  ui->_theGameBoard->resetBoard(false, false);
+  _humanPlayer.reset(new Player(UserIdentity::eHuman, PieceColors::eWhite));
+  _aiPlayer.reset(new Player(UserIdentity::eComputer, PieceColors::eBlack));
+  ui->_theGameBoard->setEnabled(true);
+  ui->_theGameBoard->setHumanPlayer(_humanPlayer);
+  ui->_theGameBoard->setAiPlayer(_aiPlayer);
+  TurnManager::getInstance().switchPlayers(_humanPlayer);
 }
 
 ///
-/// \brief Chess::endGame
-/// \param checkMate
+/// \brief Chess::endGame() is the slot that concludes the game flow.
+/// \param checkMate indicates whether a King was checked when the game ended.
+///
+/// The game is always, and only ended when no more moves are possible
+/// for the player whose turn it is.  If a King was checked, it's checkmate,
+/// if not, it's stalemate.
 ///
 void Chess::endGame(bool checkMate)
 {
@@ -132,7 +166,7 @@ void Chess::endGame(bool checkMate)
 }
 
 ///
-/// \brief Chess::updateCapturedPieces
+/// \brief Chess::updateCapturedPieces() clears out the old captured pieces and repopulates from the working state.
 ///
 void Chess::updateCapturedPieces()
 {
@@ -142,45 +176,41 @@ void Chess::updateCapturedPieces()
   piecesListType capturedPieces = ui->_theGameBoard->workingCapturedPieces();
   piecesListType::iterator i = capturedPieces.begin();
 
-  while(i != capturedPieces.end())
-  {
+  while (i != capturedPieces.end()) {
     definedPieceType x = *i;
     ++i;
 
     QPixmap pm;
-    QString colorString = Pieces::getInstance().colorNames().at(x.second);
+    QString colorString = PieceColors::getInstance().colorNames().at(x.second);
     QString identityString = Pieces::getInstance().identityNames().at(x.first);
     QString resPath = QString(":/Pieces/") + QString("Resources/") + colorString + QString("/") + identityString + QString(".png");
     pm.load(resPath, "PNG");
     CapturedPieceWidget* capturedPiece = new CapturedPieceWidget(pm);
 
-    switch(x.second)
-    {
-      case Pieces::PieceColors::eBlack:
-      {
-        _blackLayout->addWidget(capturedPiece);
-        break;
-      }
-      case Pieces::PieceColors::eWhite:
-      {
-        _whiteLayout->addWidget(capturedPiece);
-        break;
-      }
+    switch (x.second) {
+    case PieceColors::eBlack: {
+      _blackLayout->addWidget(capturedPiece);
+      break;
+    }
+    case PieceColors::eWhite: {
+      _whiteLayout->addWidget(capturedPiece);
+      break;
+    }
     }
   }
 }
 
 ///
-/// \brief Chess::clearLayout
-/// \param layout
+/// \brief Chess::clearLayout() is the function used for clearing out the old captured pieces
+/// \param layout is the layout to be cleared of all items.
 ///
-void Chess::clearLayout(QLayout *layout)
+void Chess::clearLayout(QLayout* layout)
 {
-    if (layout) {
-        while(layout->count() > 0){
-            QLayoutItem *item = layout->takeAt(0);
-            delete item->widget();
-            delete item;
-        }
+  if (layout) {
+    while (layout->count() > 0) {
+      QLayoutItem* item = layout->takeAt(0);
+      delete item->widget();
+      delete item;
     }
+  }
 }

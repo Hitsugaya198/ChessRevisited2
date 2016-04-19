@@ -1,3 +1,16 @@
+/**
+ * @file   Cell.cpp
+ * @author Louis Parkin (louis.parkin@stonethree.com)
+ * @date   April 2016
+ * @brief  This file contains the inner management features of a Cell on a Chess Board
+ *
+ * In this cpp file is housed all the functions and attributes needed to construct and manage a
+ * a Chess Board Cell.
+ *
+ * Most notably, a Cell is actually a styleable QPushButton, that is also defined to be checkable.
+ * It embeds a Chess Piece into itself, and sets an image of that Piece as its icon.
+ */
+
 #include "Cell.h"
 
 #include "StyleSheetProcessor.h"
@@ -7,26 +20,26 @@
 
 #include <QGridLayout>
 #include <QDebug>
-#include <QMutexLocker>
 
+///
+/// \brief Cell::_checkedCounter is a static member to help Cell objects determine if other Cells were clicked before them
+///
 int Cell::_checkedCounter = 0;
 
 ///
-/// \brief Cell::Cell
-/// \param parent
+/// \brief Cell::Cell() The default constructor for a Cell object.
+/// \param parent [in] represents the object that will destroy instances of Cell, if not null. The Cells should have a Board as their parent.
 ///
 Cell::Cell(QWidget* parent):
   QPushButton(parent),
   _myPiece(new Piece(parent))
 {
-  _me = this;
-
   // We want to know when a selection takes place.  This is indicated by a toggled signal
   connect(this, SIGNAL(toggled(bool)), this, SLOT(handleCellToggled(bool)));
 }
 
 ///
-/// \brief Cell::~Cell
+/// \brief Cell::~Cell() The default destructor that destroys Cell objects.
 ///
 Cell::~Cell()
 {
@@ -34,44 +47,48 @@ Cell::~Cell()
 }
 
 ///
-/// \brief Cell::row
-/// \return
+/// \brief Cell::row() is the accessor function that provides the row in which this Cell is located.
+/// \return the row number where this Cell resides.
 ///
-int Cell::row() const
+rowType Cell::row() const
 {
   return _row;
 }
 
 ///
-/// \brief Cell::setRow
-/// \param row
+/// \brief Cell::setRow() is the mutator function that manipulates the row in which this Cell is located.
+/// \param row [in] the row number to set for this Cell.
 ///
-void Cell::setRow(int row)
+void Cell::setRow(rowType row)
 {
   _row = row;
 }
 
 ///
-/// \brief Cell::column
-/// \return
+/// \brief Cell::column() is the accessor function that provides the column in which this Cell is located.
+/// \return the column number where this Cell resides.
 ///
-int Cell::column() const
+columnType Cell::column() const
 {
   return _column;
 }
 
 ///
-/// \brief Cell::setColumn
-/// \param column
+/// \brief Cell::setColumn() is the mutator function that manipulates the column in which this Cell is located.
+/// \param column [in] the column number to set for this Cell.
 ///
-void Cell::setColumn(int column)
+void Cell::setColumn(columnType column)
 {
   _column = column;
 }
 
 ///
-/// \brief Cell::highLightCell
-/// \param highLight
+/// \brief Cell::highLightCell() changes the color of the Cell between highlighted and regular.
+/// \param highLight [in] indicates whether to highlight the Cell or not.
+/// This function can also be used to color cells by calling @code cell->highLightCell(false); @endcode
+/// The reason for this is that highlights are merely a lighter shade of the normal color of the Cell,
+/// and not highlighting it is the same as changing it's color to a darker shade of the highlighted color.
+/// The actual color of the Cell is determined by its position on the board.
 ///
 void Cell::highLightCell(bool highLight)
 {
@@ -79,66 +96,52 @@ void Cell::highLightCell(bool highLight)
 }
 
 ///
-/// \brief Cell::resetCheckedCounter
+/// \brief Cell::resetCheckedCounter() is used to reset the checked counter of all Cell objects back to zero (static member).
 ///
 void Cell::resetCheckedCounter()
 {
   _checkedCounter = 0;
 }
 
+///
+/// \brief Cell::checkAccessContinue() checks the location access of move destination Cell objects
+/// \return true if the moving piece has access to the destination Cell, false if not.
+///
 bool Cell::checkAccessContinue()
 {
   // Check that the right user is attempting to move
-  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
-    // Pieces must be Black or empty
-    if (assignedPiece()->color() != Pieces::PieceColors::eBlack) {
-      if (assignedPiece()->color() != Pieces::PieceColors::eNone) {
-        setChecked(false);
-        highLightCell(false);
-        return false;
-      }
-    }
-  }
-
-  if (TurnManager::currentPlayer()->identity() == UserIdentity::eComputer) {
-    // Pieces must be White or empty
-    if (assignedPiece()->color() != Pieces::PieceColors::eWhite) {
-      if (assignedPiece()->color() != Pieces::PieceColors::eNone) {
-        setChecked(false);
-        highLightCell(false);
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-bool Cell::checkAccessInit()
-{
-  // Check that the right user is attempting to move
-  if (TurnManager::currentPlayer()->identity() == UserIdentity::eHuman) {
-    // Pieces must be white
-    if (assignedPiece()->color() != Pieces::PieceColors::eWhite) {
+  // Pieces must be of the enemy color or empty
+  if (assignedPiece()->color() != PieceColors::flipColor(TurnManager::currentPlayer()->associatedColor())) {
+    if (assignedPiece()->color() != PieceColors::eNone) {
       setChecked(false);
       highLightCell(false);
       return false;
     }
   }
 
-  if (TurnManager::currentPlayer()->identity() == UserIdentity::eComputer) {
-    // Pieces must be Black
-    if (assignedPiece()->color() != Pieces::PieceColors::eBlack) {
-      setChecked(false);
-      highLightCell(false);
-      return false;
-    }
-  }
   return true;
 }
 
 ///
-/// \brief Cell::handleCellToggled
-/// \param checked
+/// \brief Cell::checkAccessInit() checks the location access of move origin Cell objects
+/// \return true if the player has access to the origin Cell, false if not.
+///
+bool Cell::checkAccessInit()
+{
+  // Check that the right user is attempting to move.
+  // Pieces must be of the associated color.
+  if (assignedPiece()->color() != TurnManager::currentPlayer()->associatedColor()) {
+    setChecked(false);
+    highLightCell(false);
+    return false;
+  }
+
+  return true;
+}
+
+///
+/// \brief Cell::handleCellToggled() executes when a Cell is toggled (checked or unchecked)
+/// \param checked [in] indicates whether the cell is being selected or unselected.
 ///
 void Cell::handleCellToggled(bool checked)
 {
@@ -179,13 +182,12 @@ void Cell::handleCellToggled(bool checked)
 }
 
 ///
-/// \brief Cell::setCoordinate
-/// \param row
-/// \param column
+/// \brief Cell::setCoordinate() is a combined mutator function for allocating a Cell to a Board coordinate.
+/// \param row [in] is the row where the Cell is located.
+/// \param column [in] is the column where the Cell is located.
 ///
-void Cell::setCoordinate(int row, int column)
+void Cell::setCoordinate(rowType row, columnType column)
 {
-  QMutexLocker locker(&_setCoordinateMutex);
   setRow(row);
   setColumn(column);
 
@@ -193,64 +195,59 @@ void Cell::setCoordinate(int row, int column)
 }
 
 ///
-/// \brief Cell::setColor
-/// \param highLight
+/// \brief Cell::setColor() styles the Cell, whether highlighted or not.
+/// \param highLight [in] indicates whether the Cell style should be highlighted or not.
 ///
 void Cell::setColor(bool highLight)
 {
-  QMutexLocker locker(&_setColorMutex);
-
+  // Remove current stylesheet effects.
   style()->unpolish(this);
 
   QString s = styleSheet();                       // This line retrieves your current StyleSheet for THIS widget.
   StyleSheetProcessor::splitStyleMapType map;     // Creates a map to store your stylesheet elements
   map = StyleSheetProcessor::splitStyleSheet(s);  // Assigns your processed stylesheet to the local map
 
-  QString brownColor;
-  QString beigeColor;
-  QString brownBorderColor;
-  QString beigeBorderColor;
+  QString brownColor;        //  Boringly enough, this Chess Board will have
+  QString beigeColor;        //  brown and beige cells only.
 
-  if (highLight) {
-    brownColor = Colors::getInstance().getHiBrown();
-    beigeColor = Colors::getInstance().getHiBeige();
-    brownBorderColor = Colors::getInstance().getHiBrown();
-    beigeBorderColor = Colors::getInstance().getHiBeige();
+  if (highLight) { // If highlighted, the colors need to be of the Hi variety.
+    brownColor = CellColors::getInstance().getHiBrown();
+    beigeColor = CellColors::getInstance().getHiBeige();
   }
-  else {
-    brownColor = Colors::getInstance().getBrown();
-    beigeColor = Colors::getInstance().getBeige();
-    brownBorderColor = Colors::getInstance().getBrown();
-    beigeBorderColor = Colors::getInstance().getBeige();
+  else { // If not highlighted, use the normal boring shades.
+    brownColor = CellColors::getInstance().getBrown();
+    beigeColor = CellColors::getInstance().getBeige();
   }
 
-  // And then use that "id" to determine the color.
-  if (_row % 2 == 0) {
-    if (_column % 2 == 0) {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    // Replaces the stylesheet element for background color with "#663300"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeBorderColor);        // Replaces the stylesheet element for background color with "#EDC25E"
+  // The row/column coordinate's divisibility by two determines the color of the Cell.
+  // In summary, all even row even column cells will be brown with beige borders, and all
+  // even row uneven column cells will be beige with brown borders.
+  if (_row % 2 == 0) { // rows 2, 4, 6, and 8
+    if (_column % 2 == 0) { // columns 2, 4, 6, and 8
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    // Replaces the stylesheet element for background color with "brownColor"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeColor);        // Replaces the stylesheet element for border color with "beigeColor"
     }
-    else {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    // Replaces the stylesheet element for background color with "#EDC25E"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownBorderColor);        // Replaces the stylesheet element for border color with "#663300"
+    else { // columns  1, 3, 5, and 7
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    // Replaces the stylesheet element for background color with "beigeColor"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownColor);        // Replaces the stylesheet element for border color with "brownColor"
     }
   }
-
-  if (_row % 2 != 0) {
-    if (_column % 2 != 0) {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    // Replaces the stylesheet element for background color with "#663300"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeBorderColor);        // Replaces the stylesheet element for background color with "#EDC25E"
+  // And all uneven row uneven column cells will be brown with beige borders, and all
+  // uneven row even column cells will be beige with brown borders.
+  else if (_row % 2 != 0) { // rows 1, 3, 5, and 7
+    if (_column % 2 != 0) {// columns  1, 3, 5, and 7
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, brownColor);    // Replaces the stylesheet element for background color with "brownColor"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, beigeColor);        // Replaces the stylesheet element for border color with "beigeColor"
     }
-    else {
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    // Replaces the stylesheet element for background color with "#EDC25E"
-      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownBorderColor);        // Replaces the stylesheet element for border color with "#663300"
+    else { // columns 2, 4, 6, and 8
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBackGroundColor, beigeColor);    // Replaces the stylesheet element for background color with "beigeColor"
+      StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderColor, brownColor);        // Replaces the stylesheet element for border color with "brownColor"
     }
   }
 
-  // Removed the border styling, as it removes the visual effect of the cells being checked
+  // Solid boder style flattens the button, so it doesn't look like, well, a button.
   StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderStyle, QString("solid"));       // Replaces the stylesheet element for border style with "solid"
-  StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderWidth, QString("1px"));
-  //  StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderStyle, QString("outset"));      // Replaces the stylesheet element for border style with "outset"
+  StyleSheetProcessor::addOrReplaceItemInMap(map, StyleSheetProcessor::sBorderWidth, QString("1px"));         // Replaces the stylesheet element for border width with "1px"
 
   s = StyleSheetProcessor::mergeStyleSheet(map);                                                              // Merges the stylesheet back into a single string.
   setStyleSheet(s);        // Sets the stylesheet of THIS widget.
@@ -258,15 +255,16 @@ void Cell::setColor(bool highLight)
 }
 
 ///
-/// \brief Cell::assignPiece
-/// \param piece
+/// \brief Cell::assignPiece() does what its name suggests.  It assigns a Chess Piece to this Cell.
+/// \param piece [in] is a shared pointer to a definedPieceType Chess Piece.
 ///
 void Cell::assignPiece(QSharedPointer<Piece> piece)
 {
-  QMutexLocker locker(&_assignPieceMutex);
-  clearAssignedPiece();
+  clearAssignedPiece(); // make sure there is nothing currently assigned.
 
-  _myPiece = QSharedPointer<Piece>(piece);
+  _myPiece = QSharedPointer<Piece>(piece); // Copy construct my inner Piece.
+
+  // Force the size of the icon to be 40x40
   QSize mySize(40, 40);
   setIconSize(mySize);
   setIcon(_myPiece->getPixmap());
@@ -274,31 +272,30 @@ void Cell::assignPiece(QSharedPointer<Piece> piece)
 }
 
 ///
-/// \brief Cell::assignedPiece
-/// \return
+/// \brief Cell::assignedPiece() is an accessor method to obtain a reference to the Cell's current piece.
+/// \return a QSharedPointer<Piece> reference that points the this Cell's assigned piece.
 ///
 QSharedPointer<Piece>& Cell::assignedPiece()
 {
-
   return _myPiece;
-
 }
 
 ///
-/// \brief Cell::position
-/// \return
+/// \brief Cell::position() is a combination accessor the returns row and column in a complex data type.
+/// \return a boardCoordinateType value of the current row and column.
 ///
-Cell::boardCoordinateType Cell::position()
+boardCoordinateType Cell::position()
 {
   return boardCoordinateType(row(), column());
 }
 
 ///
-/// \brief Cell::clearAssignedPiece
+/// \brief Cell::clearAssignedPiece() clears current assigned piece, reconstructs with Identity:none and Color:none.
+/// If _myPiece held the last reference to the shared pointer, a call to this function would also delete the
+/// memory that _myPiece used to point to.
 ///
 void Cell::clearAssignedPiece()
 {
-  QMutexLocker locker(&_clearAssignPieceMutex);
   _myPiece.clear();
   _myPiece = QSharedPointer<Piece>(new Piece);
   setIcon(QPixmap());
