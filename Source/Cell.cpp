@@ -1,8 +1,8 @@
 /**
- * @file   Cell.cpp
- * @author Louis Parkin (louis.parkin@stonethree.com)
- * @date   April 2016
- * @brief  This file contains the inner management features of a Cell on a Chess Board
+ * \file   Cell.cpp
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the inner management features of a Cell on a Chess Board
  *
  * In this cpp file is housed all the functions and attributes needed to construct and manage a
  * a Chess Board Cell.
@@ -22,12 +22,12 @@
 #include <QDebug>
 
 ///
-/// \brief Cell::_checkedCounter is a static member to help Cell objects determine if other Cells were clicked before them
+/// Cell::_checkedCounter is a static member to help Cell objects determine if other Cells were clicked before them
 ///
 int Cell::_checkedCounter = 0;
 
 ///
-/// \brief Cell::Cell() The default constructor for a Cell object.
+/// Cell::Cell() The default constructor for a Cell object.
 /// \param parent [in] represents the object that will destroy instances of Cell, if not null. The Cells should have a Board as their parent.
 ///
 Cell::Cell(QWidget* parent):
@@ -39,7 +39,7 @@ Cell::Cell(QWidget* parent):
 }
 
 ///
-/// \brief Cell::~Cell() The default destructor that destroys Cell objects.
+/// Cell::~Cell() The default destructor that destroys Cell objects.
 ///
 Cell::~Cell()
 {
@@ -47,7 +47,7 @@ Cell::~Cell()
 }
 
 ///
-/// \brief Cell::row() is the accessor function that provides the row in which this Cell is located.
+/// Cell::row() is the accessor function that provides the row in which this Cell is located.
 /// \return the row number where this Cell resides.
 ///
 rowType Cell::row() const
@@ -56,7 +56,7 @@ rowType Cell::row() const
 }
 
 ///
-/// \brief Cell::setRow() is the mutator function that manipulates the row in which this Cell is located.
+/// Cell::setRow() is the mutator function that manipulates the row in which this Cell is located.
 /// \param row [in] the row number to set for this Cell.
 ///
 void Cell::setRow(rowType row)
@@ -65,7 +65,7 @@ void Cell::setRow(rowType row)
 }
 
 ///
-/// \brief Cell::column() is the accessor function that provides the column in which this Cell is located.
+/// Cell::column() is the accessor function that provides the column in which this Cell is located.
 /// \return the column number where this Cell resides.
 ///
 columnType Cell::column() const
@@ -74,7 +74,7 @@ columnType Cell::column() const
 }
 
 ///
-/// \brief Cell::setColumn() is the mutator function that manipulates the column in which this Cell is located.
+/// Cell::setColumn() is the mutator function that manipulates the column in which this Cell is located.
 /// \param column [in] the column number to set for this Cell.
 ///
 void Cell::setColumn(columnType column)
@@ -83,9 +83,9 @@ void Cell::setColumn(columnType column)
 }
 
 ///
-/// \brief Cell::highLightCell() changes the color of the Cell between highlighted and regular.
+/// Cell::highLightCell() changes the color of the Cell between highlighted and regular.
 /// \param highLight [in] indicates whether to highlight the Cell or not.
-/// This function can also be used to color cells by calling @code cell->highLightCell(false); @endcode
+/// This function can also be used to color cells by calling \code cell->highLightCell(false); \endcode
 /// The reason for this is that highlights are merely a lighter shade of the normal color of the Cell,
 /// and not highlighting it is the same as changing it's color to a darker shade of the highlighted color.
 /// The actual color of the Cell is determined by its position on the board.
@@ -96,7 +96,7 @@ void Cell::highLightCell(bool highLight)
 }
 
 ///
-/// \brief Cell::resetCheckedCounter() is used to reset the checked counter of all Cell objects back to zero (static member).
+/// Cell::resetCheckedCounter() is used to reset the checked counter of all Cell objects back to zero (static member).
 ///
 void Cell::resetCheckedCounter()
 {
@@ -104,7 +104,7 @@ void Cell::resetCheckedCounter()
 }
 
 ///
-/// \brief Cell::checkAccessContinue() checks the location access of move destination Cell objects
+/// Cell::checkAccessContinue() checks the location access of move destination Cell objects
 /// \return true if the moving piece has access to the destination Cell, false if not.
 ///
 bool Cell::checkAccessContinue()
@@ -123,7 +123,7 @@ bool Cell::checkAccessContinue()
 }
 
 ///
-/// \brief Cell::checkAccessInit() checks the location access of move origin Cell objects
+/// Cell::checkAccessInit() checks the location access of move origin Cell objects
 /// \return true if the player has access to the origin Cell, false if not.
 ///
 bool Cell::checkAccessInit()
@@ -140,7 +140,7 @@ bool Cell::checkAccessInit()
 }
 
 ///
-/// \brief Cell::handleCellToggled() executes when a Cell is toggled (checked or unchecked)
+/// Cell::handleCellToggled() executes when a Cell is toggled (checked or unchecked)
 /// \param checked [in] indicates whether the cell is being selected or unselected.
 ///
 void Cell::handleCellToggled(bool checked)
@@ -182,7 +182,7 @@ void Cell::handleCellToggled(bool checked)
 }
 
 ///
-/// \brief Cell::setCoordinate() is a combined mutator function for allocating a Cell to a Board coordinate.
+/// Cell::setCoordinate() is a combined mutator function for allocating a Cell to a Board coordinate.
 /// \param row [in] is the row where the Cell is located.
 /// \param column [in] is the column where the Cell is located.
 ///
@@ -195,7 +195,7 @@ void Cell::setCoordinate(rowType row, columnType column)
 }
 
 ///
-/// \brief Cell::setColor() styles the Cell, whether highlighted or not.
+/// Cell::setColor() styles the Cell, whether highlighted or not.
 /// \param highLight [in] indicates whether the Cell style should be highlighted or not.
 ///
 void Cell::setColor(bool highLight)
@@ -255,7 +255,7 @@ void Cell::setColor(bool highLight)
 }
 
 ///
-/// \brief Cell::assignPiece() does what its name suggests.  It assigns a Chess Piece to this Cell.
+/// Cell::assignPiece() does what its name suggests.  It assigns a Chess Piece to this Cell.
 /// \param piece [in] is a shared pointer to a definedPieceType Chess Piece.
 ///
 void Cell::assignPiece(QSharedPointer<Piece> piece)
@@ -272,7 +272,7 @@ void Cell::assignPiece(QSharedPointer<Piece> piece)
 }
 
 ///
-/// \brief Cell::assignedPiece() is an accessor method to obtain a reference to the Cell's current piece.
+/// Cell::assignedPiece() is an accessor method to obtain a reference to the Cell's current piece.
 /// \return a QSharedPointer<Piece> reference that points the this Cell's assigned piece.
 ///
 QSharedPointer<Piece>& Cell::assignedPiece()
@@ -281,7 +281,7 @@ QSharedPointer<Piece>& Cell::assignedPiece()
 }
 
 ///
-/// \brief Cell::position() is a combination accessor the returns row and column in a complex data type.
+/// Cell::position() is a combination accessor the returns row and column in a complex data type.
 /// \return a boardCoordinateType value of the current row and column.
 ///
 boardCoordinateType Cell::position()
@@ -290,7 +290,7 @@ boardCoordinateType Cell::position()
 }
 
 ///
-/// \brief Cell::clearAssignedPiece() clears current assigned piece, reconstructs with Identity:none and Color:none.
+/// Cell::clearAssignedPiece() clears current assigned piece, reconstructs with Identity:none and Color:none.
 /// If _myPiece held the last reference to the shared pointer, a call to this function would also delete the
 /// memory that _myPiece used to point to.
 ///

@@ -1,8 +1,8 @@
 /**
- * @file   MoveMapper.cpp
- * @author Louis Parkin (louis.parkin@stonethree.com)
- * @date   April 2016
- * @brief  This file contains the inner management features of the MoveMapper class
+ * \file   MoveMapper.cpp
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the inner management features of the MoveMapper class
  *
  * In this cpp file is housed all the functions and attributes needed to determine
  * whether a player has any availble moves at his disposal.
@@ -14,7 +14,7 @@
 #include "Piece.h"
 
 ///
-/// \brief MoveMapper::MoveMapper is the default constructor for the MoveMapper type
+/// MoveMapper::MoveMapper is the default constructor for the MoveMapper type
 /// \param parent is the QObject that will eventually destroy the pointer to MoveMapper (if not null).
 ///
 MoveMapper::MoveMapper(QObject* parent) : QObject(parent)
@@ -23,7 +23,7 @@ MoveMapper::MoveMapper(QObject* parent) : QObject(parent)
 }
 
 ///
-/// \brief MoveMapper::~MoveMapper is the default destructor for MoveMapper objects
+/// MoveMapper::~MoveMapper is the default destructor for MoveMapper objects
 ///
 MoveMapper::~MoveMapper()
 {
@@ -31,7 +31,7 @@ MoveMapper::~MoveMapper()
 }
 
 ///
-/// \brief MoveMapper::doesPlayerHaveAvailableMoves calculates every possible move of every piece for a given player.
+/// MoveMapper::doesPlayerHaveAvailableMoves calculates every possible move of every piece for a given player.
 /// \param whichPlayer is the player that the calculation will be done for.
 /// \param containerOfAvailableMoves [in,out] is the container of moves available, post analysis.
 /// \param kingChecked [out] is a boolean that indicates whether the player referenced by whichPlayer's king is checked.
@@ -256,7 +256,7 @@ bool MoveMapper::doesPlayerHaveAvailableMoves(QSharedPointer<Player>& whichPlaye
 }
 
 ///
-/// \brief MoveMapper::associatedGameBoard is an accessor method to the Board pointer currently assiated with this instance of MoveMapper
+/// MoveMapper::associatedGameBoard is an accessor method to the Board pointer currently assiated with this instance of MoveMapper
 /// \return a pointer to the associated Board.
 ///
 Board* MoveMapper::associatedGameBoard() const
@@ -265,7 +265,7 @@ Board* MoveMapper::associatedGameBoard() const
 }
 
 ///
-/// \brief MoveMapper::associateGameBoard is a mutator method to manipulate the the associate game Board pointer.
+/// MoveMapper::associateGameBoard is a mutator method to manipulate the the associate game Board pointer.
 /// \param associatedGameBoard is the new pointer to store as the associated game Board.
 ///
 void MoveMapper::associateGameBoard(Board* associatedGameBoard)

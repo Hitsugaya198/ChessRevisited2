@@ -2,7 +2,7 @@
 #include <QApplication>
 
 ///
-/// \brief main
+/// main
 /// \param argc
 /// \param argv
 /// \return

@@ -1,9 +1,14 @@
+///
+/// \file   Player.cpp
+/// \author Louis Parkin (louis.parkin@stonethree.com)
+/// \date   April 2016
+/// This file contains the inner management features of a Player.
+///
+/// In this cpp file is housed the functionality to construct and manage a Player entity.
+///
+
 #include "Player.h"
 
-///
-/// \brief Player::Player
-/// \param parent
-///
 Player::Player(QObject* parent) :
   QObject(parent)
 {
@@ -11,11 +16,6 @@ Player::Player(QObject* parent) :
   _associatedColor = PieceColors::eNone;
 }
 
-///
-/// \brief Player::Player
-/// \param identity
-/// \param parent
-///
 Player::Player(UserIdentity::eIdentities identity, PieceColors::ePieceColors color, QObject* parent) :
   QObject(parent)
 {
@@ -23,30 +23,19 @@ Player::Player(UserIdentity::eIdentities identity, PieceColors::ePieceColors col
   _associatedColor = color;
 }
 
-///
-/// \brief Player::~Player
-///
 Player::~Player()
 {
 
 }
 
-///
-/// \brief Player::identity
-/// \return
-///
 UserIdentity::eIdentities Player::identity() const
 {
   return _identity;
 }
 
-///
-/// \brief Player::associatedColor
-/// \return
-///
 PieceColors::ePieceColors Player::associatedColor() const
 {
-    return _associatedColor;
+  return _associatedColor;
 }
 
 

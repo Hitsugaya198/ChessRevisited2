@@ -7,7 +7,7 @@ QSharedPointer<Player> TurnManager::_currentPlayer = QSharedPointer<Player>();
 AppFilter* TurnManager::_filter = new AppFilter();
 
 ///
-/// \brief TurnManager::TurnManager
+/// TurnManager::TurnManager
 /// \param parent
 ///
 TurnManager::TurnManager(QObject* parent) : QObject(parent)
@@ -16,7 +16,7 @@ TurnManager::TurnManager(QObject* parent) : QObject(parent)
 }
 
 ///
-/// \brief TurnManager::currentPlayer
+/// TurnManager::currentPlayer
 /// \return
 ///
 QSharedPointer<Player>& TurnManager::currentPlayer()
@@ -25,7 +25,7 @@ QSharedPointer<Player>& TurnManager::currentPlayer()
 }
 
 ///
-/// \brief TurnManager::switchPlayers
+/// TurnManager::switchPlayers
 /// \param toWhichPlayer
 ///
 void TurnManager::switchPlayers(QSharedPointer<Player>& toWhichPlayer)
@@ -64,7 +64,7 @@ void TurnManager::switchPlayers(QSharedPointer<Player>& toWhichPlayer)
 }
 
 ///
-/// \brief TurnManager::setCurrentPlayer
+/// TurnManager::setCurrentPlayer
 /// \param currentPlayer
 ///
 void TurnManager::setCurrentPlayer(const QSharedPointer<Player>& currentPlayer)
@@ -73,7 +73,7 @@ void TurnManager::setCurrentPlayer(const QSharedPointer<Player>& currentPlayer)
 }
 
 ///
-/// \brief TurnManager::~TurnManager
+/// TurnManager::~TurnManager
 ///
 TurnManager::~TurnManager()
 {

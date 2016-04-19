@@ -1,8 +1,20 @@
+/**
+ * \file   MoveRules.cpp
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the functionality to map movement rules for Chess Pieces
+ *
+ * In this cpp file is housed the single function needed to construct a
+ * a map of rules that contain  directions and magnitudes for a given type
+ * of Chess piece.
+ *
+ */
+
 #include "MoveRules.h"
 
 ///
-/// \brief MoveRules::MoveRules
-/// \param parent
+/// MoveRules::MoveRules is the default constructor for the MoveRules class.
+/// \param parent is the QObject that will eventually destroy the pointer to MoveRules. If it is not null.
 ///
 MoveRules::MoveRules(QObject* parent) : QObject(parent)
 {
@@ -10,7 +22,7 @@ MoveRules::MoveRules(QObject* parent) : QObject(parent)
 }
 
 ///
-/// \brief MoveRules::~MoveRules
+/// MoveRules::~MoveRules is the default destructor for objects of type MoveRules.
 ///
 MoveRules::~MoveRules()
 {
@@ -18,10 +30,11 @@ MoveRules::~MoveRules()
 }
 
 ///
-/// \brief MoveRules::getMovementRules
-/// \param identity
-/// \param pieceColor
-/// \return
+/// MoveRules::getMovementRules is the function that provides rules regarding direction and magnitude per Piece
+/// \param identity is the identity of the Piece that requires rules.
+/// \param pieceColor is the color of the Piece that requires rules.
+/// \return the map of rules that govern movements of Chess pieces
+/// The color is mainly important for pieces like Pawns that can only move "forward" and diagonally "forward".
 ///
 movementType MoveRules::getMovementRules(Pieces::Identities::eIdentities identity,
                                          PieceColors::ePieceColors pieceColor)

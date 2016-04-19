@@ -5,7 +5,7 @@
 static QStringList slTypes = QStringList();
 
 ///
-/// \brief StyleSheetProcessor::StyleSheetProcessor
+/// StyleSheetProcessor::StyleSheetProcessor
 /// \param parent
 ///
 StyleSheetProcessor::StyleSheetProcessor(QObject* parent) :
@@ -17,7 +17,7 @@ StyleSheetProcessor::StyleSheetProcessor(QObject* parent) :
 }
 
 ///
-/// \brief StyleSheetProcessor::~StyleSheetProcessor
+/// StyleSheetProcessor::~StyleSheetProcessor
 ///
 StyleSheetProcessor::~StyleSheetProcessor()
 {
@@ -25,7 +25,7 @@ StyleSheetProcessor::~StyleSheetProcessor()
 }
 
 ///
-/// \brief StyleSheetProcessor::initList
+/// StyleSheetProcessor::initList
 ///
 void StyleSheetProcessor::initList()
 {
@@ -37,7 +37,7 @@ void StyleSheetProcessor::initList()
 }
 
 ///
-/// \brief StyleSheetProcessor::splitStyleSheet
+/// StyleSheetProcessor::splitStyleSheet
 /// \param styleSheet
 /// \return
 ///
@@ -61,7 +61,7 @@ StyleSheetProcessor::splitStyleMapType StyleSheetProcessor::splitStyleSheet(QStr
 }
 
 ///
-/// \brief StyleSheetProcessor::mergeStyleSheet
+/// StyleSheetProcessor::mergeStyleSheet
 /// \param styleMap
 /// \return
 ///
@@ -79,7 +79,7 @@ QString StyleSheetProcessor::mergeStyleSheet(StyleSheetProcessor::splitStyleMapT
 }
 
 ///
-/// \brief StyleSheetProcessor::addOrReplaceItemInMap
+/// StyleSheetProcessor::addOrReplaceItemInMap
 /// \param styleMap
 /// \param valueType
 /// \param newValue
@@ -110,7 +110,7 @@ void StyleSheetProcessor::addOrReplaceItemInMap(StyleSheetProcessor::splitStyleM
 }
 
 ///
-/// \brief StyleSheetProcessor::isBackGroundColor
+/// StyleSheetProcessor::isBackGroundColor
 /// \param input
 /// \return
 ///
@@ -123,7 +123,7 @@ bool StyleSheetProcessor::isBackGroundColor(QString& input)
 }
 
 ///
-/// \brief StyleSheetProcessor::isTextColor
+/// StyleSheetProcessor::isTextColor
 /// \param input
 /// \return
 ///
@@ -136,7 +136,7 @@ bool StyleSheetProcessor::isTextColor(QString& input)
 }
 
 ///
-/// \brief StyleSheetProcessor::isBorderColor
+/// StyleSheetProcessor::isBorderColor
 /// \param input
 /// \return
 ///
@@ -149,7 +149,7 @@ bool StyleSheetProcessor::isBorderColor(QString& input)
 }
 
 ///
-/// \brief StyleSheetProcessor::isBorderStyle
+/// StyleSheetProcessor::isBorderStyle
 /// \param input
 /// \return
 ///
@@ -162,7 +162,7 @@ bool StyleSheetProcessor::isBorderStyle(QString& input)
 }
 
 ///
-/// \brief StyleSheetProcessor::isBorderWidth
+/// StyleSheetProcessor::isBorderWidth
 /// \param input
 /// \return
 ///
@@ -175,7 +175,7 @@ bool StyleSheetProcessor::isBorderWidth(QString& input)
 }
 
 ///
-/// \brief StyleSheetProcessor::getType
+/// StyleSheetProcessor::getType
 /// \param input
 /// \return
 ///
@@ -203,7 +203,7 @@ StyleSheetProcessor::eStyleComponents StyleSheetProcessor::getType(QString input
 }
 
 ///
-/// \brief StyleSheetProcessor::getTypeString
+/// StyleSheetProcessor::getTypeString
 /// \param type
 /// \return
 ///

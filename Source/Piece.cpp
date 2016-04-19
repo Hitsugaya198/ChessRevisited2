@@ -1,9 +1,18 @@
+/**
+ * \file   Piece.cpp
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the inner management features of a Chess Piece
+ *
+ * In this cpp file is housed the functionality to construct and manage a Chess Piece
+ */
+
 #include "Piece.h"
 #include <QDebug>
 
 ///
-/// \brief Piece::Piece
-/// \param parent
+/// Piece::Piece is the default constructor that can only create "blanks", required for an empty Board Cell.
+/// \param parent is the QObject that will eventually destroy the Piece. If it is not null.
 ///
 Piece::Piece(QObject* parent) : QObject(parent)
 {
@@ -13,12 +22,12 @@ Piece::Piece(QObject* parent) : QObject(parent)
 }
 
 ///
-/// \brief Piece::Piece
-/// \param identity
-/// \param pieceColor
-/// \param parent
+/// Piece::Piece is the default constructor that can create any piece, including "blanks".
+/// \param identity is the identity of the Piece to be created.
+/// \param pieceColor is the color of the Piece to be created.
+/// \param parent is the QObject that will eventually destroy the Piece. If it is not null.
 ///
-Piece::Piece(Piece::eIdentities identity, Piece::ePieceColors pieceColor, QObject* parent) : QObject(parent)
+Piece::Piece(Pieces::Identities::eIdentities identity, PieceColors::ePieceColors pieceColor, QObject* parent) : QObject(parent)
 {
   setIdentity(identity);
   setColor(pieceColor);
@@ -26,7 +35,7 @@ Piece::Piece(Piece::eIdentities identity, Piece::ePieceColors pieceColor, QObjec
 }
 
 ///
-/// \brief Piece::~Piece
+/// Piece::~Piece is the default destructor for class Piece.
 ///
 Piece::~Piece()
 {
@@ -34,8 +43,8 @@ Piece::~Piece()
 }
 
 ///
-/// \brief Piece::identity
-/// \return
+/// Piece::identity is an accessor method to query the identity of a Piece
+/// \return the identity type of a piece defined in \file Pieces.h
 ///
 Pieces::Identities::eIdentities Piece::identity() const
 {
@@ -43,17 +52,17 @@ Pieces::Identities::eIdentities Piece::identity() const
 }
 
 ///
-/// \brief Piece::setIdentity
-/// \param identity
+/// Piece::setIdentity is a mutator method to manipulate the identity of a Piece
+/// \param identity is the type of a piece defined in \file Pieces.h to set as the new identity of this Piece
 ///
-void Piece::setIdentity(const eIdentities& identity)
+void Piece::setIdentity(const Pieces::Identities::eIdentities& identity)
 {
   _identity = identity;
 }
 
 ///
-/// \brief Piece::color
-/// \return
+/// Piece::color is an accessor method to query the colour of a Piece
+/// \return the color type of a piece defined in \file Colors.h
 ///
 PieceColors::ePieceColors Piece::color() const
 {
@@ -61,45 +70,35 @@ PieceColors::ePieceColors Piece::color() const
 }
 
 ///
-/// \brief Piece::setColor
-/// \param color
+/// Piece::setColor is a mutator method to manipulate the colour of a Piece
+/// \param color is the colour type of a piece defined in \file Color.h to set as the new colour of this Piece
 ///
-void Piece::setColor(const ePieceColors& color)
+void Piece::setColor(const PieceColors::ePieceColors& color)
 {
   _color = color;
 }
 
 ///
-/// \brief Piece::enemyColor
-/// \return
+/// Piece::enemyColor is a conveniece function that flips this Piece's colour to determine that of his enemy.
+/// \return the colour of the enemies of this Piece
 ///
-Piece::ePieceColors Piece::enemyColor() const
+PieceColors::ePieceColors Piece::enemyColor() const
 {
-  if (color() == PieceColors::eWhite) {
-    return PieceColors::eBlack;
-  }
-  else {
-    return PieceColors::eWhite;
-  }
+  return PieceColors::flipColor(color());
 }
 
 ///
-/// \brief Piece::enemyColor
-/// \param colorInput
-/// \return
+/// Piece::enemyColor is a static conveniece function that flips any colour to determine that of its enemy, when there is no Piece instance.
+/// \param colorInput [in] a specific value to determine the enemy of.
+/// \return the colour of the enemies of Pieces of colorInput colour.
 ///
-Piece::ePieceColors Piece::enemyColor(PieceColors::ePieceColors colorInput)
+PieceColors::ePieceColors Piece::enemyColor(PieceColors::ePieceColors colorInput)
 {
-  if (colorInput == PieceColors::eWhite) {
-    return PieceColors::eBlack;
-  }
-  else {
-    return PieceColors::eWhite;
-  }
+  return PieceColors::flipColor(colorInput);
 }
 
 ///
-/// \brief Piece::generatePixmap
+/// Piece::generatePixmap generates the internal pixmap image of a Piece that will ultimately be displayed as the icon of a Cell
 ///
 void Piece::generatePixmap()
 {
@@ -121,8 +120,8 @@ void Piece::generatePixmap()
 }
 
 ///
-/// \brief Piece::getPixmap
-/// \return
+/// Piece::getPixmap is an accessor to the pixmap image embedded inside a Piece
+/// \return the pixmap to be used for graphically representing a Piece
 ///
 const QPixmap& Piece::getPixmap() const
 {
@@ -130,8 +129,8 @@ const QPixmap& Piece::getPixmap() const
 }
 
 ///
-/// \brief Piece::assignCell
-/// \param cell
+/// Piece::assignCell exists to make the cell aware of it's location, but isn't used for anything useful after it's assigned.
+/// \param cell is the Cell that this piece knows it is on.
 ///
 void Piece::assignCell(Cell* cell)
 {
@@ -139,7 +138,7 @@ void Piece::assignCell(Cell* cell)
 }
 
 ///
-/// \brief Piece::clearAssignedCell
+/// Piece::clearAssignedCell does what its name suggests.  This Piece dissociates itself from its Cell.
 ///
 void Piece::clearAssignedCell()
 {

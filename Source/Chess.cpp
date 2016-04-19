@@ -1,8 +1,8 @@
 /**
- * @file   Chess.cpp
- * @author Louis Parkin (louis.parkin@stonethree.com)
- * @date   April 2016
- * @brief  This file contains the inner management features of Chess game
+ * \file   Chess.cpp
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the inner management features of Chess game
  *
  * In this cpp file is housed all the functions and attributes needed to construct and manage a
  * a Chess game.
@@ -21,7 +21,7 @@
 #include <QMessageBox>
 
 ///
-/// \brief Chess::Chess() is the default constructor for the MainWindow of the application.
+/// Chess::Chess() is the default constructor for the MainWindow of the application.
 /// \param parent is always zero for this class, as it is the main entry point of the application.
 /// \code
 ///   Chess w;
@@ -104,7 +104,7 @@ Chess::Chess(QWidget* parent) :
 }
 
 ///
-/// \brief Chess::~Chess() is the default destructor of Chess objects
+/// Chess::~Chess() is the default destructor of Chess objects
 ///
 Chess::~Chess()
 {
@@ -112,7 +112,7 @@ Chess::~Chess()
 }
 
 ///
-/// \brief Chess::on_action_New_Game_triggered() is the Ui-generated slot for the "New Game" menu option.
+/// Chess::on_action_New_Game_triggered() is the Ui-generated slot for the "New Game" menu option.
 ///
 void Chess::on_action_New_Game_triggered()
 {
@@ -120,7 +120,7 @@ void Chess::on_action_New_Game_triggered()
 }
 
 ///
-/// \brief Chess::on_actionE_xit_triggered() is the Ui-generated slot for the "Exit" menu option.
+/// Chess::on_actionE_xit_triggered() is the Ui-generated slot for the "Exit" menu option.
 ///
 void Chess::on_actionE_xit_triggered()
 {
@@ -128,7 +128,7 @@ void Chess::on_actionE_xit_triggered()
 }
 
 ///
-/// \brief Chess::startNewGame() does as its name suggests.
+/// Chess::startNewGame() does as its name suggests.
 ///
 /// To start a new game, the board has to be reset, the players are recreated,
 /// the game Board is re-enabled, as endGame() disables it, the players are shared with
@@ -147,7 +147,7 @@ void Chess::startNewGame()
 }
 
 ///
-/// \brief Chess::endGame() is the slot that concludes the game flow.
+/// Chess::endGame() is the slot that concludes the game flow.
 /// \param checkMate indicates whether a King was checked when the game ended.
 ///
 /// The game is always, and only ended when no more moves are possible
@@ -166,7 +166,7 @@ void Chess::endGame(bool checkMate)
 }
 
 ///
-/// \brief Chess::updateCapturedPieces() clears out the old captured pieces and repopulates from the working state.
+/// Chess::updateCapturedPieces() clears out the old captured pieces and repopulates from the working state.
 ///
 void Chess::updateCapturedPieces()
 {
@@ -201,7 +201,7 @@ void Chess::updateCapturedPieces()
 }
 
 ///
-/// \brief Chess::clearLayout() is the function used for clearing out the old captured pieces
+/// Chess::clearLayout() is the function used for clearing out the old captured pieces
 /// \param layout is the layout to be cleared of all items.
 ///
 void Chess::clearLayout(QLayout* layout)

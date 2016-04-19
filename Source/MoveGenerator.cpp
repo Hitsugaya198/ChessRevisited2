@@ -1,8 +1,8 @@
 /**
- * @file   MoveGenerator.cpp
- * @author Louis Parkin (louis.parkin@stonethree.com)
- * @date   April 2016
- * @brief  This file contains the inner management features of the MoveGenerator class
+ * \file   MoveGenerator.cpp
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the inner management features of the MoveGenerator class
  *
  * In this cpp file is housed all the functions and attributes needed to manage a
  * a the moves of an AI player during a Chess game.
@@ -14,18 +14,18 @@
 #include "Piece.h"
 
 ///
-/// \brief MoveGenerator::_moveStrategy is a static member that determines which function is called on a new move
+/// MoveGenerator::_moveStrategy is a static member that determines which function is called on a new move
 ///
 int MoveGenerator::_moveStrategy = 2;
 
 ///
-/// \brief MoveGenerator::_reverseIterateThroughPieces is a static member.
+/// MoveGenerator::_reverseIterateThroughPieces is a static member.
 /// It determines whether a container of pieces is accessed from the front or the back.
 ///
 bool MoveGenerator::_reverseIterateThroughPieces = true;
 
 ///
-/// \brief MoveGenerator::MoveGenerator is the default constructor for objects of the MoveGenerator class.
+/// MoveGenerator::MoveGenerator is the default constructor for objects of the MoveGenerator class.
 /// \param parent is the QObject that will eventually destroy the pointer to MoveGenerator (if not null).
 ///
 MoveGenerator::MoveGenerator(QObject* parent) : QObject(parent)
@@ -34,7 +34,7 @@ MoveGenerator::MoveGenerator(QObject* parent) : QObject(parent)
 }
 
 ///
-/// \brief MoveGenerator::~MoveGenerator is the default destructor for objects of type MoveGenerator
+/// MoveGenerator::~MoveGenerator is the default destructor for objects of type MoveGenerator
 ///
 MoveGenerator::~MoveGenerator()
 {
@@ -42,7 +42,7 @@ MoveGenerator::~MoveGenerator()
 }
 
 ///
-/// \brief MoveGenerator::handleTurnChange is the function that gets invoked when it is the AI's turn to move
+/// MoveGenerator::handleTurnChange is the function that gets invoked when it is the AI's turn to move
 /// \param itIsNowThisPlayersTurn indicates whose turn it is to move.
 /// \param containerOfPossibleMoves is a container of moves that proves a move can be made.
 /// \param kingIsChecked indicates whether the king of the player whose turn it is, is checked.
@@ -69,7 +69,7 @@ void MoveGenerator::handleTurnChange(QSharedPointer<Player>& itIsNowThisPlayersT
 }
 
 ///
-/// \brief MoveGenerator::handleMoveCompletionRequired is called after a move has been initiated, in order to complete the move
+/// MoveGenerator::handleMoveCompletionRequired is called after a move has been initiated, in order to complete the move
 ///
 void MoveGenerator::handleMoveCompletionRequired()
 {
@@ -84,7 +84,7 @@ void MoveGenerator::handleMoveCompletionRequired()
 }
 
 ///
-/// \brief MoveGenerator::moveTheFirstPieceThatCanMove does as its name suggests.  In some cases, priority is given to moves that can capture enemy pieces.
+/// MoveGenerator::moveTheFirstPieceThatCanMove does as its name suggests.  In some cases, priority is given to moves that can capture enemy pieces.
 /// \param itIsNowThisPlayersTurn is the player whose turn it is to play.
 /// \param containerOfPossibleMoves is a container used for keeping track of what is possible.
 /// \param kingIsChecked is an indication of whether moves will be restricted to that which will uncheck the king.
@@ -147,7 +147,7 @@ void MoveGenerator::moveTheFirstPieceThatCanMove(QSharedPointer<Player>& itIsNow
 }
 
 ///
-/// \brief MoveGenerator::moveWithPriorityForAttack wrapper to call moveTheFirstPieceThatCanMove with.
+/// MoveGenerator::moveWithPriorityForAttack wrapper to call moveTheFirstPieceThatCanMove with.
 /// \param itIsNowThisPlayersTurn is the player whose turn it is.
 /// \param containerOfPossibleMoves is a container used for keeping track of what is possible.
 /// \param kingIsChecked is an indication of whether moves will be restricted to that which will uncheck the king.
@@ -163,7 +163,7 @@ void MoveGenerator::moveWithPriorityForAttack(QSharedPointer<Player>& itIsNowThi
 }
 
 ///
-/// \brief MoveGenerator::moveAnyPieceThatCanMove
+/// MoveGenerator::moveAnyPieceThatCanMove
 /// \param itIsNowThisPlayersTurn is the player whose turn it is.
 /// \param containerOfPossibleMoves is a container used for keeping track of what is possible.
 /// \param kingIsChecked is an indication of whether moves will be restricted to that which will uncheck the king.
@@ -178,7 +178,7 @@ void MoveGenerator::moveAnyPieceThatCanMove(QSharedPointer<Player>& itIsNowThisP
 }
 
 ///
-/// \brief MoveGenerator::associatedGameBoard is an accessor method to the game Board associated with this MoveGenerator instance.
+/// MoveGenerator::associatedGameBoard is an accessor method to the game Board associated with this MoveGenerator instance.
 /// \return the currently associated Board as a pointer.
 ///
 Board* MoveGenerator::associatedGameBoard() const
@@ -187,7 +187,7 @@ Board* MoveGenerator::associatedGameBoard() const
 }
 
 ///
-/// \brief MoveGenerator::associateGameBoard is a mutator method that associates a game Board with this MoveGenerator instance.
+/// MoveGenerator::associateGameBoard is a mutator method that associates a game Board with this MoveGenerator instance.
 /// \param theGameBoard is the Board pointer that will henceforth be associated to this MoveGenerator instance.
 ///
 void MoveGenerator::associateGameBoard(Board* theGameBoard)
@@ -196,7 +196,7 @@ void MoveGenerator::associateGameBoard(Board* theGameBoard)
 }
 
 ///
-/// \brief MoveGenerator::aiPlayer is an accessor method to the AI Player associated with this MoveGenerator instance.
+/// MoveGenerator::aiPlayer is an accessor method to the AI Player associated with this MoveGenerator instance.
 /// \return the currently associated AI player for this MoveGenerator instance.
 ///
 QSharedPointer<Player> MoveGenerator::aiPlayer() const
@@ -205,7 +205,7 @@ QSharedPointer<Player> MoveGenerator::aiPlayer() const
 }
 
 ///
-/// \brief MoveGenerator::setAiPlayer is a mutator method that associates a Player instance with this MoveGenerator instance.
+/// MoveGenerator::setAiPlayer is a mutator method that associates a Player instance with this MoveGenerator instance.
 /// \param aiPlayer is the Player instance that will henceforth be associated with this MoveGenerator instance.
 ///
 void MoveGenerator::setAiPlayer(const QSharedPointer<Player>& aiPlayer)

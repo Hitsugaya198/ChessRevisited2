@@ -2,7 +2,7 @@
 #include <QDebug>
 
 ///
-/// \brief UserIdentity::UserIdentity
+/// UserIdentity::UserIdentity
 /// \param parent
 ///
 UserIdentity::UserIdentity(QObject* parent):

@@ -1,8 +1,8 @@
 /**
- * @file   Colors.h
- * @author Louis Parkin (louis.parkin@stonethree.com)
- * @date   April 2016
- * @brief  This file contains the inner structure definitions for the various color aspects of Chess.
+ * \file   Colors.h
+ * \author Louis Parkin (louis.parkin@stonethree.com)
+ * \date   April 2016
+ * This file contains the inner structure definitions for the various color aspects of Chess.
  *
  * At the time of writing, only two colour types were involved.  That of the Cell, and that of the Piece.
  */
@@ -13,13 +13,13 @@
 #include <QString>
 
 /**
- * @brief The CellColors struct contains properties and functions related to the colouring of Board Cells
+ * The CellColors struct contains properties and functions related to the colouring of Board Cells
  */
 struct CellColors {
 
 public:
   /**
-  * @brief The eCellColors enum outlines the values of colours that a Board Cell can be.
+  * The eCellColors enum outlines the values of colours that a Board Cell can be.
   */
   enum eCellColors {
     eNone,             /**< enum value eNone eludes to an unitialized state */
@@ -30,8 +30,8 @@ public:
   };
 
   /**
-   * @brief getInstance returns an instance reference, as the constructor is private.  Singleton Pattern
-   * @return an instance reference to the static object of struct CellColors.
+   * getInstance returns an instance reference, as the constructor is private.  Singleton Pattern
+   * \return an instance reference to the static object of struct CellColors.
    */
   static CellColors& getInstance()
   {
@@ -40,8 +40,8 @@ public:
   }
 
   /**
-   * @brief getBrown accessor method to obtain the color code for brown.
-   * @return
+   * getBrown accessor method to obtain the color code for brown.
+   * \return
    */
   QString getBrown()
   {
@@ -49,8 +49,8 @@ public:
   }
 
   /**
-   * @brief getBeige accessor method to obtain the color code for beige.
-   * @return
+   * getBeige accessor method to obtain the color code for beige.
+   * \return
    */
   QString getBeige()
   {
@@ -58,8 +58,8 @@ public:
   }
 
   /**
-   * @brief getHiBrown accessor method to obtain the color code for a lighter shade of brown.
-   * @return
+   * getHiBrown accessor method to obtain the color code for a lighter shade of brown.
+   * \return
    */
   QString getHiBrown()
   {
@@ -67,8 +67,8 @@ public:
   }
 
   /**
-   * @brief getHiBeige accessor method to obtain the color code for a lighter shade of beige.
-   * @return
+   * getHiBeige accessor method to obtain the color code for a lighter shade of beige.
+   * \return
    */
   QString getHiBeige()
   {
@@ -78,7 +78,7 @@ public:
 private:
 
   /**
-   * @brief CellColors is the private default constructor for objects of CellColors
+   * CellColors is the private default constructor for objects of CellColors
    */
   CellColors()
   {
@@ -89,43 +89,43 @@ private:
   }
 
   /**
-   * @brief CellColors declared as private, this copy- by-const-reference constructor is now no longer accessible.
+   * CellColors declared as private, this copy- by-const-reference constructor is now no longer accessible.
    */
   CellColors(CellColors const&);
 
   /**
-   * @brief operator = declared as private, this copy- by-const-reference operator is now no longer accessible.
+   * operator = declared as private, this copy- by-const-reference operator is now no longer accessible.
    */
   void operator=(CellColors const&);
 
   /**
-   * @brief _htmlColorCodeForBeige is the private member that stores the html color code for beige
+   * _htmlColorCodeForBeige is the private member that stores the html color code for beige
    */
   QString _htmlColorCodeForBeige;
 
   /**
-   * @brief _htmlColorCodeForBrown is the private member that stores the html color code for brown
+   * _htmlColorCodeForBrown is the private member that stores the html color code for brown
    */
   QString _htmlColorCodeForBrown;
 
   /**
-   * @brief _htmlColorCodeForHighlightBeige is the private member that stores the html color code for a lighter shade of beige.
+   * _htmlColorCodeForHighlightBeige is the private member that stores the html color code for a lighter shade of beige.
    */
   QString _htmlColorCodeForHighlightBeige;
 
   /**
-   * @brief _htmlColorCodeForHighlightBrown is the private member that stores the html color code for a lighter shade of brown.
+   * _htmlColorCodeForHighlightBrown is the private member that stores the html color code for a lighter shade of brown.
    */
   QString _htmlColorCodeForHighlightBrown;
 };
 
 /**
- * @brief The PieceColors struct contains properties and functions related to the colouring of Chess Pieces
+ * The PieceColors struct contains properties and functions related to the colouring of Chess Pieces
  */
 struct PieceColors {
 
   /**
-  * @brief The ePieceColors enum outlines the values of colours that a Chess Piece can be.
+  * The ePieceColors enum outlines the values of colours that a Chess Piece can be.
   */
   enum ePieceColors {
     eNone  = 0,      /**< enum value eNone eludes to an uninitialized state */
@@ -136,8 +136,8 @@ struct PieceColors {
   };
 
   /**
-   * @brief getInstance returns an instance reference, as the constructor is private.  Singleton Pattern
-   * @return
+   * getInstance returns an instance reference, as the constructor is private.  Singleton Pattern
+   * \return
    */
   static PieceColors& getInstance()
   {
@@ -146,9 +146,9 @@ struct PieceColors {
   }
 
   /**
-   * @brief flipColor provides a quick binary outcome to the question "What's the opposite of?"
-   * @param color is the colour that is to be flipped.
-   * @return the opposite to color
+   * flipColor provides a quick binary outcome to the question "What's the opposite of?"
+   * \param color is the colour that is to be flipped.
+   * \return the opposite to color
    */
   static inline PieceColors::ePieceColors flipColor(PieceColors::ePieceColors color)
   {
@@ -163,8 +163,8 @@ struct PieceColors {
   }
 
   /**
-   * @brief colorNames a QStringList that gives a string representation of the colour names in English
-   * @return a copy of the QStringList
+   * colorNames a QStringList that gives a string representation of the colour names in English
+   * \return a copy of the QStringList
    */
   QStringList colorNames() const
   {
@@ -174,7 +174,7 @@ struct PieceColors {
 private:
 
   /**
-   * @brief PieceColors is the private default constructor of struct PieceColors
+   * PieceColors is the private default constructor of struct PieceColors
    * It instantiates and populates the _colorNames list.
    */
   PieceColors()
@@ -186,17 +186,17 @@ private:
   }
 
   /**
-   * @brief PieceColors declared as private, this copy- by-const-reference constructor is now no longer accessible.
+   * PieceColors declared as private, this copy- by-const-reference constructor is now no longer accessible.
    */
   PieceColors(PieceColors const&);
 
   /**
-   * @brief operator = declared as private, this copy- by-const-reference operator is now no longer accessible.
+   * operator = declared as private, this copy- by-const-reference operator is now no longer accessible.
    */
   void operator=(PieceColors const&);
 
   /**
-   * @brief _colorNames is the private member that stores the English names of the Piece Colors
+   * _colorNames is the private member that stores the English names of the Piece Colors
    */
   QStringList _colorNames;
 
