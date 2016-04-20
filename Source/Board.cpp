@@ -18,7 +18,7 @@
 /// manipulate the states for the purpose of evaluating possible future moves,
 /// before committing to make the move.
 ///
-/// The state evaluation only relates to whether or not the current player's king
+/// The state evaluation only relates to whether or not the current Player's king
 /// is currently checked (in the state being evaluated).
 ///
 /// If evaluate state finds the state to be invalid, the details are logged as
@@ -86,7 +86,7 @@ void Board::clearHighLights()
 
       if (cell != NULL) {
 
-        cell->highLightCell(false);
+        cell->toggleCellHighlights(false);
       }
     }
 }
@@ -102,7 +102,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
   if (getCell(fromWhere)->assignedPiece()->identity() == Pieces::Identities::eNone ||
       getCell(fromWhere)->assignedPiece()->color() == PieceColors::eNone) {
     getCell(fromWhere)->setChecked(false);
-    getCell(fromWhere)->highLightCell(false);
+    getCell(fromWhere)->toggleCellHighlights(false);
     return;
   }
 
@@ -113,7 +113,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
 
   bool boardIsValid = evaluateBoardState(_workingBoardStateMap);
 
-  // This would imply the King of the current player is checked, so valid moves
+  // This would imply the King of the current Player is checked, so valid moves
   if (!boardIsValid) {
     // see if any potential moves can bring the board into a legal state (uncheck the king)
     // first check if the selected cell can attack the offender
@@ -245,7 +245,7 @@ void Board::moveInitiated(boardCoordinateType fromWhere)
         movePieceStart(this, from, to, tempState, tempPieces);
 
         bool boardStillValid = evaluateBoardState(tempState);
-        if (!boardStillValid) { // this will check the current player's king
+        if (!boardStillValid) { // this will check the current Player's king
           container.remove(toWhere);
           containerIterator = container.begin();
         }
@@ -483,7 +483,7 @@ void Board::highLightCoordinates(boardCoordinatesType& set)
 
     Cell* toCell = getCell(coordinate.first, coordinate.second);
 
-    toCell->highLightCell(true);
+    toCell->toggleCellHighlights(true);
   }
 }
 
@@ -1324,7 +1324,7 @@ void Board::createStartupMap(boardStateMapType& mapToInitialize)
           continue;
         }
 
-        if (row == ePawnsTopRow || row == ePawnsBottomRow) { // This will be all pawns.  Assume player always plays with white
+        if (row == ePawnsTopRow || row == ePawnsBottomRow) { // This will be all pawns.  Assume Player always plays with white
           PieceColors::ePieceColors pieceColor;
           if (row == ePawnsTopRow) {
             pieceColor = PieceColors::eBlack;

@@ -120,7 +120,7 @@ public:
   /// \param pointA [in] is the start coordinate of the path to be calculated.
   /// \param pointB [in] is the end coordinate of the path to be calculated.
   /// \param boardStateToSearch [in] is the state to use when calculating the path.
-  /// \return the se of coordinates that represent the path between pointA and pointB
+  /// \return the se of coordinates that represent the path between pointA and pointB.
   ///
   boardCoordinatesType getPath(boardCoordinateType pointA,
                                boardCoordinateType pointB,
@@ -144,33 +144,33 @@ public:
   /// King and Queen, there may be more than just one of each piece definition on the board at
   /// any given time.
   ///
-  /// \param piece [in] is the identity and color as definedPieceType of the pieces to find
-  /// \param boardStateToSearch [in] is the state that will be searched to locate the pieces in question
-  /// \return the boardCoordinatesType defined as a QSet<boardCoordinateType> containing the search result(s)
+  /// \param piece [in] is the identity and color as definedPieceType of the pieces to find.
+  /// \param boardStateToSearch [in] is the state that will be searched to locate the pieces in question.
+  /// \return the boardCoordinatesType defined as a QSet<boardCoordinateType> containing the search result(s).
   ///
   boardCoordinatesType findPieces(definedPieceType piece, boardStateMapType& boardStateToSearch);
 
   ///
-  /// evaluateBoardState determines whether the king of the current player is in danger.
+  /// evaluateBoardState determines whether the king of the current Player is in danger.
   ///
   /// Example usage:
   /// \code
-  ///   bool isCurrentStateValid = evaluateBoardState (currentBoardState);
-  ///   if (isCurrentStateValid) {
-  ///     movePieceStart (this, fromCell, toCell, currentBoardState, currentCapturedPiecesList);
-  ///   }
+  ///  bool isCurrentStateValid = evaluateBoardState (currentBoardState);
+  ///  if (isCurrentStateValid) {
+  ///    movePieceStart (this, fromCell, toCell, currentBoardState, currentCapturedPiecesList);
+  ///  }
   ///
-  ///   bool isCurrentStateStillValid  = evaluateBoardState (currentBoardState);
-  ///   if (isCurrentStateStillValid) {
-  ///     movePieceCompleteMove (this, currentBoardState);
-  ///   }
-  ///   else {
-  ///     movePieceRevertMove (currentBoardState, currentCapturedPiecesList);
-  ///   }
+  ///  bool isCurrentStateStillValid  = evaluateBoardState (currentBoardState);
+  ///  if (isCurrentStateStillValid) {
+  ///    movePieceCompleteMove (this, currentBoardState);
+  ///  }
+  ///  else {
+  ///    movePieceRevertMove (currentBoardState, currentCapturedPiecesList);
+  ///  }
   /// \endcode
   ///
   /// \param boardStateToEvaluate [in] is the board state to be evaluated.
-  /// \return the state "validity" of the board (true = king is not checked, i.e. Board state is valid)
+  /// \return the state "validity" of the board (true = king is not checked, i.e. Board state is valid).
   ///
   bool evaluateBoardState(boardStateMapType& boardStateToEvaluate);
 
@@ -190,7 +190,7 @@ public:
                              piecesListType& scenarioPieces = _workingCapturedPieces);
 
   ///
-  /// movePieceCompleteMove completes a move (@see movePieceStart )
+  /// movePieceCompleteMove completes a move (\see movePieceStart ).
   ///
   /// \param _this [in] is the Board instance pointer, needed because movePieceStart is a static function.
   /// \param scenario [in,out] the board state map on which the move is to be "committed" as final.
@@ -198,7 +198,7 @@ public:
   static void movePieceCompleteMove(Board* _this, boardStateMapType& scenario = _workingBoardStateMap);
 
   ///
-  /// movePieceRevertMove reverts a move (@see movePieceStart )
+  /// movePieceRevertMove reverts a move (\see movePieceStart ).
   ///
   /// \param scenario [in,out] the board state map on which the move is to be "reverted" post-validation.
   /// \param scenarioPieces [in,out] the list of captured pieces that accompanies the board state.
@@ -300,7 +300,7 @@ public:
   QSharedPointer<Player>& humanPlayer();
 
   ///
-  /// setHumanPlayer allocates a Player entity to be used by the human player.
+  /// setHumanPlayer allocates a Player entity to be used by the human Player.
   ///
   /// \param humanPlayer [in] is a const QSharedPointer<Player> reference as created in Chess.cpp, and shared with the Board.
   ///
@@ -438,7 +438,7 @@ public:
 
 public slots:
   ///
-  /// clearHighLights removes highlighted colouring on all cells across the board
+  /// clearHighLights removes highlighted colouring on all cells across the board.
   ///
   void clearHighLights();
 
@@ -446,7 +446,7 @@ signals:
   ///
   /// moveInitiatedComplete signal is emitted after the first step of a move is completed.
   ///
-  /// \param playerWhoInitiated [in] the player that is making a move.
+  /// \param playerWhoInitiated [in] the Player that is making a move.
   ///
   void moveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
 
@@ -463,14 +463,14 @@ signals:
 private slots:
 
   ///
-  /// moveInitiated prepares the board for an actual move
+  /// moveInitiated prepares the board for an actual move.
   ///
-  /// \param fromWhere [in] is a board coordinate (row,column) that the player selected as a starting point.
+  /// \param fromWhere [in] is a board coordinate (row,column) that the Player selected as a starting point.
   ///
   void moveInitiated(boardCoordinateType fromWhere);
 
   ///
-  /// continueInitiatedMove is the second leg of a move initiated previously, \see moveInitiated
+  /// continueInitiatedMove is the second leg of a move initiated previously, \see moveInitiated.
   ///
   /// \param whereTo [in] is the destination cell for the second leg of the move.
   ///
@@ -482,12 +482,12 @@ private slots:
   /// A human would normally complete both steps of a movement without being prompted to do so.
   /// The AI however is not quite human, and requires some encouragement, hence the timer and timerEvent.
   ///
-  /// \param playerWhoInitiated [in] is either the AI (aiPlayer) or the human participant (humanPlayer)
+  /// \param playerWhoInitiated [in] is either the AI (aiPlayer) or the human participant (humanPlayer).
   ///
   void handleMoveInitiatedComplete(QSharedPointer<Player>& playerWhoInitiated);
 
   ///
-  /// timerEvent is called when the 400ms timer fires an event. \see handleMoveInitiatedComplete
+  /// timerEvent is called when the 400ms timer fires an event. \see handleMoveInitiatedComplete.
   ///
   /// \param event [in] details the event that fired.
   ///
@@ -536,7 +536,7 @@ private:
   boardCoordinateType _locationStart;
 
   ///
-  /// _locationEnd is the private member that holds the end position of a move in progress
+  /// _locationEnd is the private member that holds the end position of a move in progress.
   ///
   boardCoordinateType _locationEnd;
 
@@ -546,12 +546,12 @@ private:
   boardCoordinatesType _containerForMoving;
 
   ///
-  /// _humanPlayer stores a shared pointer to the human player object.
+  /// _humanPlayer stores a shared pointer to the human Player object.
   ///
   QSharedPointer<Player> _humanPlayer;
 
   ///
-  /// _aiPlayer stores a shared pointer to the AI player object.
+  /// _aiPlayer stores a shared pointer to the AI Player object.
   ///
   QSharedPointer<Player> _aiPlayer;
 
@@ -614,8 +614,8 @@ private:
   ///
   /// This implementation is a parameter overloaded version of the one that combines identity and color into definedPieceType.
   ///
-  /// \param colorThatIsToBeFound [in] is the PieceColors::ePieceColors value that represents the colour of the piece to be found
-  /// \param identityThatIsToBeFound [in] is the Pieces::Identities::eIdentities value that represents the identity of the piece to be found
+  /// \param colorThatIsToBeFound [in] is the PieceColors::ePieceColors value that represents the colour of the piece to be found.
+  /// \param identityThatIsToBeFound [in] is the Pieces::Identities::eIdentities value that represents the identity of the piece to be found.
   /// \param boardStateToUse [in] the board state to search for the piece in question.
   /// \return the coordinate where the piece can be found.
   ///

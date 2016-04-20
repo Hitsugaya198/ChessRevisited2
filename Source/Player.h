@@ -2,6 +2,7 @@
 /// \file   Player.h
 /// \author Louis Parkin (louis.parkin@stonethree.com)
 /// \date   April 2016
+///
 /// This file contains structure definitions and members of the Player class.
 ///
 
@@ -15,7 +16,7 @@
 #include <QObject>
 
 ///
-/// The Player class represents the structure and functionality of a Chess Player entity
+/// The Player class represents the structure and functionality of a Chess Player entity.
 ///
 class Player : public QObject
 {
@@ -48,14 +49,14 @@ public:
   ///
   /// Player::identity is an accessor method that provides access to the Player's identity.
   ///
-  /// \return the identity of the current Player as defined in \file UserIdentity.h
+  /// \return the identity of the current Player as defined in UserIdentity.h
   ///
   UserIdentity::eIdentities identity() const;
 
   ///
   /// Player::associatedColor is an accessor method that provides access to the associated Piece colour for this Player.
   ///
-  /// \return the colour associated with this Player, as defined in \file Colors.h.
+  /// \return the colour associated with this Player, as defined in Colors.h.
   ///
   PieceColors::ePieceColors associatedColor() const;
 

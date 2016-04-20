@@ -20,19 +20,6 @@
 
 #include <QMessageBox>
 
-///
-/// Chess::Chess() is the default constructor for the MainWindow of the application.
-/// \param parent is always zero for this class, as it is the main entry point of the application.
-/// \code
-///   Chess w;
-///   w.show();
-/// \endcode
-///
-/// This construct also initializes the user interface class Ui::Chess, as well as the Player
-/// entities that will take part in the game.
-///
-/// To manage the AI Player, an instance of MoveGenerator is also created.
-///
 Chess::Chess(QWidget* parent) :
   QMainWindow(parent),
   ui(new Ui::Chess),
@@ -103,38 +90,21 @@ Chess::Chess(QWidget* parent) :
   startNewGame();
 }
 
-///
-/// Chess::~Chess() is the default destructor of Chess objects
-///
 Chess::~Chess()
 {
   delete ui;
 }
 
-///
-/// Chess::on_action_New_Game_triggered() is the Ui-generated slot for the "New Game" menu option.
-///
 void Chess::on_action_New_Game_triggered()
 {
   startNewGame();
 }
 
-///
-/// Chess::on_actionE_xit_triggered() is the Ui-generated slot for the "Exit" menu option.
-///
 void Chess::on_actionE_xit_triggered()
 {
   QApplication::exit(0);
 }
 
-///
-/// Chess::startNewGame() does as its name suggests.
-///
-/// To start a new game, the board has to be reset, the players are recreated,
-/// the game Board is re-enabled, as endGame() disables it, the players are shared with
-/// the Board instance, and finally, the TurnManager is informed it is now the human
-/// player's turn.
-///
 void Chess::startNewGame()
 {
   ui->_theGameBoard->resetBoard(false, false);
@@ -146,14 +116,6 @@ void Chess::startNewGame()
   TurnManager::getInstance().switchPlayers(_humanPlayer);
 }
 
-///
-/// Chess::endGame() is the slot that concludes the game flow.
-/// \param checkMate indicates whether a King was checked when the game ended.
-///
-/// The game is always, and only ended when no more moves are possible
-/// for the player whose turn it is.  If a King was checked, it's checkmate,
-/// if not, it's stalemate.
-///
 void Chess::endGame(bool checkMate)
 {
   ui->_theGameBoard->setEnabled(false);
@@ -165,9 +127,6 @@ void Chess::endGame(bool checkMate)
   }
 }
 
-///
-/// Chess::updateCapturedPieces() clears out the old captured pieces and repopulates from the working state.
-///
 void Chess::updateCapturedPieces()
 {
   clearLayout(_blackLayout);
@@ -200,10 +159,6 @@ void Chess::updateCapturedPieces()
   }
 }
 
-///
-/// Chess::clearLayout() is the function used for clearing out the old captured pieces
-/// \param layout is the layout to be cleared of all items.
-///
 void Chess::clearLayout(QLayout* layout)
 {
   if (layout) {

@@ -2,6 +2,7 @@
 /// \file   Player.cpp
 /// \author Louis Parkin (louis.parkin@stonethree.com)
 /// \date   April 2016
+///
 /// This file contains the inner management features of a Player.
 ///
 /// In this cpp file is housed the functionality to construct and manage a Player entity.

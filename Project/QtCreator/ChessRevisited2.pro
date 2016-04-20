@@ -20,7 +20,6 @@ SOURCES += \
            ../../Source/Cell.cpp \
            ../../Source/Piece.cpp \
            ../../Source/StyleSheetProcessor.cpp \
-           ../../Source/UserIdentity.cpp \
     ../../Source/MoveRules.cpp \
     ../../Source/Player.cpp \
     ../../Source/TurnManager.cpp \
@@ -49,7 +48,8 @@ HEADERS  += \
     ../../Source/MoveMapper.h \
     ../../Source/CommonTypeDefinitions.h \
     ../../Source/Direction.h \
-    ../../Source/Magnitude.h
+    ../../Source/Magnitude.h \
+    ../../Source/StyleComponents.h
 
 FORMS    += ../../Source/Chess.ui \
             ../../Source/Board.ui \

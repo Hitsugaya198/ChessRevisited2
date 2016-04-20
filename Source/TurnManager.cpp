@@ -1,3 +1,14 @@
+///
+/// \file   TurnManager.cpp
+/// \author Louis Parkin (louis.parkin@stonethree.com)
+/// \date   April 2016
+///
+/// This cpp file contains the body functionality of the TurnManager class.
+///
+/// The TurnManager is in essence a state machine that makes sure that users can't
+/// play Pieces out of turn, and is also responsible for ending the game.
+///
+
 #include "TurnManager.h"
 
 #include <QSharedPointer>
@@ -6,28 +17,16 @@
 QSharedPointer<Player> TurnManager::_currentPlayer = QSharedPointer<Player>();
 AppFilter* TurnManager::_filter = new AppFilter();
 
-///
-/// TurnManager::TurnManager
-/// \param parent
-///
 TurnManager::TurnManager(QObject* parent) : QObject(parent)
 {
 
 }
 
-///
-/// TurnManager::currentPlayer
-/// \return
-///
 QSharedPointer<Player>& TurnManager::currentPlayer()
 {
   return _currentPlayer;
 }
 
-///
-/// TurnManager::switchPlayers
-/// \param toWhichPlayer
-///
 void TurnManager::switchPlayers(QSharedPointer<Player>& toWhichPlayer)
 {
   if (_currentPlayer == 0) {
@@ -63,20 +62,12 @@ void TurnManager::switchPlayers(QSharedPointer<Player>& toWhichPlayer)
   }
 }
 
-///
-/// TurnManager::setCurrentPlayer
-/// \param currentPlayer
-///
 void TurnManager::setCurrentPlayer(const QSharedPointer<Player>& currentPlayer)
 {
   _currentPlayer = currentPlayer;
 }
 
-///
-/// TurnManager::~TurnManager
-///
 TurnManager::~TurnManager()
 {
 
 }
-
